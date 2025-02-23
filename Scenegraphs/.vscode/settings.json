@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/Users/abigailhews/Documents/2024-2025/spring/cs4300/demos-glfw/Scenegraphs",
+            "binaryPath": "/Users/abigailhews/Documents/2024-2025/spring/cs4300/demos-glfw/Scenegraphs/Scenegraphs",
+            "binaryArgs": []
+        }
+    ]
+}
