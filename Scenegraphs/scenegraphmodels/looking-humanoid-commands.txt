@@ -1,0 +1,198 @@
+# Looking up humanoid
+instance sphere models/sphere.obj
+instance cylinder models/cylinder.obj
+
+# Using same materials as original
+material knee-material
+ambient 1 0 0
+end-material
+
+material thigh-material
+ambient 1 1 0
+end-material
+
+material shin-material
+ambient 0 1 0
+end-material
+
+material pelvis-material
+ambient 0 1 0
+end-material
+
+material torso-material 
+ambient 0 1 0
+end-material
+
+material shoulder-material
+ambient 0 1 1
+end-material
+
+material arm-material
+ambient 1 0.5 0
+end-material
+
+material elbow-material
+ambient 0 1 0
+end-material
+
+material forearm-material
+ambient 1 1 1
+end-material
+
+material neck-material
+ambient 1 0 0
+end-material
+
+material head-material
+ambient 1 1 0
+end-material
+
+scale s-human s-human 0.0138 0.0138 0.0138
+assign-root s-human
+
+group human human
+add-child human s-human
+
+# Three main body parts
+group lowerbody lowerbody
+group midbody midbody
+group upperbody upperbody
+
+# Standard body part positioning
+translate t-lowerbody-to-human t-lowerbody-to-human 0 42 0
+add-child lowerbody t-lowerbody-to-human
+add-child t-lowerbody-to-human human
+
+translate t-midbody-to-human t-midbody-to-human 0 60 0
+add-child midbody t-midbody-to-human
+add-child t-midbody-to-human human 
+
+translate t-upperbody-to-human t-upperbody-to-human 0 68 0
+add-child upperbody t-upperbody-to-human
+add-child t-upperbody-to-human human 
+
+# Left leg (standard pose)
+translate t-left-leg t-left-leg -5 0 0
+add-child t-left-leg lowerbody
+
+group g-leftleg g-leftleg 
+add-child g-leftleg t-left-leg
+
+group g-lshin g-lshin
+translate t-lshin t-lshin 0 -20 0
+add-child t-lshin g-lshin
+scale s-lshin s-lshin 1 20 1
+add-child s-lshin t-lshin
+leaf lshin lshin instanceof cylinder
+add-child lshin s-lshin 
+assign-material lshin shin-material
+
+group g-lknee g-lknee
+add-child g-lshin g-lknee
+scale s-lknee s-lknee 2 2 2
+add-child s-lknee g-lknee
+leaf lknee lknee instanceof sphere
+add-child lknee s-lknee
+assign-material lknee knee-material
+
+group g-lthigh g-lthigh
+translate lknee-to-lthigh lknee-to-lthigh 0 -22 0
+add-child g-lknee lknee-to-lthigh
+add-child lknee-to-lthigh g-lthigh
+translate t-lthigh t-lthigh 0 -20 0
+add-child t-lthigh g-lthigh
+scale s-lthigh s-lthigh 1 20 1
+add-child s-lthigh t-lthigh
+leaf lthigh lthigh instanceof cylinder
+add-child lthigh s-lthigh 
+assign-material lthigh thigh-material
+
+add-child g-lthigh g-leftleg
+
+# Right leg (mirror of left, standard pose)
+translate t-right-leg t-right-leg 5 0 0
+add-child t-right-leg lowerbody
+
+group g-rightleg g-rightleg 
+add-child g-rightleg t-right-leg
+
+group g-rshin g-rshin
+translate t-rshin t-rshin 0 -20 0
+add-child t-rshin g-rshin
+scale s-rshin s-rshin 1 20 1
+add-child s-rshin t-rshin
+leaf rshin rshin instanceof cylinder
+add-child rshin s-rshin 
+assign-material rshin shin-material
+
+group g-rknee g-rknee
+add-child g-rshin g-rknee
+scale s-rknee s-rknee 2 2 2
+add-child s-rknee g-rknee
+leaf rknee rknee instanceof sphere
+add-child rknee s-rknee
+assign-material rknee knee-material
+
+group g-rthigh g-rthigh
+translate rknee-to-rthigh rknee-to-rthigh 0 -22 0
+add-child g-rknee rknee-to-rthigh
+add-child rknee-to-rthigh g-rthigh
+translate t-rthigh t-rthigh 0 -20 0
+add-child t-rthigh g-rthigh
+scale s-rthigh s-rthigh 1 20 1
+add-child s-rthigh t-rthigh
+leaf rthigh rthigh instanceof cylinder
+add-child rthigh s-rthigh 
+assign-material rthigh thigh-material
+
+add-child g-rthigh g-rightleg
+
+# Torso (leaning back slightly)
+group g-torso g-torso
+add-child g-torso midbody
+translate t-torso t-torso 0 -20 0
+rotate r-torso r-torso -15 1 0 0  # Lean back
+add-child r-torso t-torso
+scale s-torso s-torso 2 20 2
+add-child s-torso r-torso
+leaf torso torso instanceof cylinder
+add-child torso s-torso
+assign-material torso torso-material
+
+# Left arm raised upward
+translate t-leftarm-to-shoulder t-leftarm-to-shoulder -8 0 0
+add-child t-leftarm-to-shoulder g-shoulder
+group g-leftarm g-leftarm
+add-child g-leftarm t-leftarm-to-shoulder
+rotate r-left-shoulder r-left-shoulder -135 1 0 0  # Raise arm up
+add-child r-left-shoulder g-leftarm
+
+# Right arm raised upward (mirror of left)
+translate t-rightarm-to-shoulder t-rightarm-to-shoulder 8 0 0
+add-child t-rightarm-to-shoulder g-shoulder
+group g-rightarm g-rightarm
+add-child g-rightarm t-rightarm-to-shoulder
+rotate r-right-shoulder r-right-shoulder -135 1 0 0  # Raise arm up
+add-child r-right-shoulder g-rightarm
+
+# Head tilted back
+group g-neck g-neck
+rotate r-neck r-neck -45 1 0 0  # Tilt head back
+add-child r-neck g-neck
+scale s-neck s-neck 1 5 1 
+add-child s-neck r-neck
+leaf neck neck instanceof cylinder
+add-child neck s-neck
+assign-material neck neck-material
+
+group g-head g-head
+translate t-neck-to-head t-neck-to-head 0 -7 0
+add-child g-neck t-neck-to-head
+add-child t-neck-to-head g-head
+scale s-head s-head 3 5 3
+add-child s-head g-head
+leaf head head instanceof sphere
+add-child head s-head
+assign-material head head-material
+
+add-child g-head upperbody

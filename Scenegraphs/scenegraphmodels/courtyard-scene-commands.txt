@@ -1,0 +1,125 @@
+# Instances must be declared first
+instance sphere models/sphere.obj
+instance box models/box.obj
+instance cylinder models/cylinder.obj
+instance cone models/cone.obj
+
+# Materials defined up front
+material ground-mat
+ambient 0.3 0.5 0.3
+end-material
+
+material building1-mat
+ambient 0.7 0.6 0.5
+end-material
+
+material building2-mat
+ambient 0.6 0.6 0.7
+end-material
+
+material turret-mat
+ambient 0.4 0.4 0.6
+end-material
+
+material roof-mat
+ambient 0.7 0.3 0.3
+end-material
+
+material pedestal-mat
+ambient 0.5 0.5 0.5
+end-material
+
+# Create root node and assign it
+group root root
+assign-root root
+
+# Ground plane
+scale ground-scale ground-scale 300 5 300
+add-child ground-scale root
+leaf ground ground instanceof box
+assign-material ground ground-mat
+add-child ground ground-scale
+
+# Building 1 with turret
+translate building1-pos building1-pos -100 50 -50
+add-child building1-pos root
+
+group building1 building1
+add-child building1 building1-pos
+
+# Main building 1 body
+scale building1-scale building1-scale 60 100 40
+add-child building1-scale building1
+leaf building1-body building1-body instanceof box
+assign-material building1-body building1-mat
+add-child building1-body building1-scale
+
+# Turret
+translate turret-pos turret-pos 20 50 0
+add-child turret-pos building1
+scale turret-scale turret-scale 15 40 15
+add-child turret-scale turret-pos
+leaf turret turret instanceof cylinder
+assign-material turret turret-mat
+add-child turret turret-scale
+
+# Turret roof
+translate turret-roof-pos turret-roof-pos 20 70 0
+add-child turret-roof-pos building1
+scale turret-roof-scale turret-roof-scale 20 30 20
+add-child turret-roof-scale turret-roof-pos
+leaf turret-roof turret-roof instanceof cone
+assign-material turret-roof roof-mat
+add-child turret-roof turret-roof-scale
+
+# Building 2
+translate building2-pos building2-pos 100 40 -50
+add-child building2-pos root
+
+group building2 building2
+add-child building2 building2-pos
+
+# Main building 2 body
+scale building2-scale building2-scale 50 80 40
+add-child building2-scale building2
+leaf building2-body building2-body instanceof box
+assign-material building2-body building2-mat
+add-child building2-body building2-scale
+
+# Building 2 roof
+translate building2-roof-pos building2-roof-pos 0 40 0
+add-child building2-roof-pos building2
+scale building2-roof-scale building2-roof-scale 55 20 45
+add-child building2-roof-scale building2-roof-pos
+leaf building2-roof building2-roof instanceof cone
+assign-material building2-roof roof-mat
+add-child building2-roof building2-roof-scale
+
+# Pedestal 1
+translate pedestal1-pos pedestal1-pos -50 5 0
+add-child pedestal1-pos root
+scale pedestal1-scale pedestal1-scale 10 10 10
+add-child pedestal1-scale pedestal1-pos
+leaf pedestal1 pedestal1 instanceof box
+assign-material pedestal1 pedestal-mat
+add-child pedestal1 pedestal1-scale
+
+# Pedestal 2 (bench-like)
+translate pedestal2-pos pedestal2-pos 50 3 0
+add-child pedestal2-pos root
+scale pedestal2-scale pedestal2-scale 15 6 10
+add-child pedestal2-scale pedestal2-pos
+leaf pedestal2 pedestal2 instanceof box
+assign-material pedestal2 pedestal-mat
+add-child pedestal2 pedestal2-scale
+
+# Import humanoids
+import looking-humanoid looking-humanoid-commands.txt
+translate looking-humanoid-pos looking-humanoid-pos -50 15 0
+add-child looking-humanoid-pos root
+add-child humanoid-looking looking-humanoid-pos
+
+import sitting-humanoid sitting-humanoid-commands.txt
+translate sitting-humanoid-pos sitting-humanoid-pos 50 9 0
+add-child sitting-humanoid-pos root
+add-child humanoid-sitting sitting-humanoid-pos

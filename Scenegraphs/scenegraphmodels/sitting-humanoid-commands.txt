@@ -1,0 +1,194 @@
+# Sitting humanoid with proper joint hierarchy
+instance sphere models/sphere.obj
+instance cylinder models/cylinder.obj
+
+# Materials (keeping original colors)
+material knee-material
+ambient 1 0 0
+end-material
+
+material thigh-material
+ambient 1 1 0
+end-material
+
+material shin-material
+ambient 0 1 0
+end-material
+
+material pelvis-material
+ambient 0 1 0
+end-material
+
+material torso-material 
+ambient 0 1 0
+end-material
+
+material shoulder-material
+ambient 0 1 1
+end-material
+
+material arm-material
+ambient 1 0.5 0
+end-material
+
+material elbow-material
+ambient 0 1 0
+end-material
+
+material forearm-material
+ambient 1 1 1 
+end-material
+
+material neck-material
+ambient 1 0 0
+end-material
+
+material head-material
+ambient 1 1 0
+end-material
+
+# Scale human to unit height
+scale s-human s-human 0.0138 0.0138 0.0138
+assign-root s-human
+
+group human human
+add-child human s-human
+
+# Three main body groups
+group lowerbody lowerbody
+group midbody midbody
+group upperbody upperbody
+
+# Position at appropriate heights for sitting
+translate t-lowerbody-to-human t-lowerbody-to-human 0 32 0  # Lower for sitting pose
+add-child lowerbody t-lowerbody-to-human
+add-child t-lowerbody-to-human human
+
+translate t-midbody-to-human t-midbody-to-human 0 60 0
+add-child midbody t-midbody-to-human
+add-child t-midbody-to-human human 
+
+translate t-upperbody-to-human t-upperbody-to-human 0 68 0
+add-child upperbody t-upperbody-to-human
+add-child t-upperbody-to-human human 
+
+# Left leg (bent for sitting)
+translate t-left-leg t-left-leg -5 0 0
+add-child t-left-leg lowerbody
+
+group g-leftleg g-leftleg 
+add-child g-leftleg t-left-leg
+
+# Left shin
+group g-lshin g-lshin
+translate t-lshin t-lshin 0 -10 0  # Shortened for sitting
+add-child t-lshin g-lshin
+scale s-lshin s-lshin 1 20 1
+add-child s-lshin t-lshin
+leaf lshin lshin instanceof cylinder
+add-child lshin s-lshin 
+assign-material lshin shin-material
+
+# Left knee with bent angle
+group g-lknee g-lknee
+rotate r-lknee r-lknee 90 1 0 0  # Bend knee for sitting
+add-child g-lshin g-lknee
+scale s-lknee s-lknee 2 2 2
+add-child s-lknee g-lknee
+leaf lknee lknee instanceof sphere
+add-child lknee s-lknee
+assign-material lknee knee-material
+
+# Left thigh (horizontal for sitting)
+group g-lthigh g-lthigh
+rotate r-lthigh r-lthigh 90 1 0 0  # Rotate thigh horizontal
+add-child g-lknee g-lthigh
+scale s-lthigh s-lthigh 1 20 1
+add-child s-lthigh g-lthigh
+leaf lthigh lthigh instanceof cylinder
+add-child lthigh s-lthigh 
+assign-material lthigh thigh-material
+
+add-child g-lthigh g-leftleg
+
+# Right leg (mirror of left)
+translate t-right-leg t-right-leg 5 0 0
+add-child t-right-leg lowerbody
+
+# Similar structure to left leg with sitting pose rotations
+group g-rightleg g-rightleg 
+add-child g-rightleg t-right-leg
+
+group g-rshin g-rshin
+translate t-rshin t-rshin 0 -10 0
+add-child t-rshin g-rshin
+scale s-rshin s-rshin 1 20 1
+add-child s-rshin t-rshin
+leaf rshin rshin instanceof cylinder
+add-child rshin s-rshin 
+assign-material rshin shin-material
+
+group g-rknee g-rknee
+rotate r-rknee r-rknee 90 1 0 0
+add-child g-rshin g-rknee
+scale s-rknee s-rknee 2 2 2
+add-child s-rknee g-rknee
+leaf rknee rknee instanceof sphere
+add-child rknee s-rknee
+assign-material rknee knee-material
+
+group g-rthigh g-rthigh
+rotate r-rthigh r-rthigh 90 1 0 0
+add-child g-rknee g-rthigh
+scale s-rthigh s-rthigh 1 20 1
+add-child s-rthigh g-rthigh
+leaf rthigh rthigh instanceof cylinder
+add-child rthigh s-rthigh 
+assign-material rthigh thigh-material
+
+add-child g-rthigh g-rightleg
+
+# Pelvis (adjusted for sitting)
+group g-pelvis g-pelvis
+add-child g-pelvis lowerbody
+translate t-pelvis t-pelvis -5 0 0
+add-child t-pelvis g-pelvis
+rotate r-pelvis r-pelvis -90 0 0 1
+add-child r-pelvis t-pelvis
+scale s-pelvis s-pelvis 1 10 1
+add-child s-pelvis r-pelvis
+leaf pelvis pelvis instanceof cylinder
+add-child pelvis s-pelvis
+assign-material pelvis pelvis-material
+
+# Torso (slightly leaning back)
+group g-torso g-torso
+add-child g-torso midbody
+translate t-torso t-torso 0 -20 0
+rotate r-torso r-torso -10 1 0 0  # Slight lean back
+add-child r-torso t-torso
+scale s-torso s-torso 2 20 2
+add-child s-torso r-torso
+leaf torso torso instanceof cylinder
+add-child torso s-torso
+assign-material torso torso-material
+
+# Rest of upper body stays relatively unchanged
+group g-neck g-neck
+scale s-neck s-neck 1 5 1 
+add-child s-neck g-neck
+leaf neck neck instanceof cylinder
+add-child neck s-neck
+assign-material neck neck-material
+
+group g-head g-head
+translate t-neck-to-head t-neck-to-head 0 -7 0
+add-child g-neck t-neck-to-head
+add-child t-neck-to-head g-head
+scale s-head s-head 3 5 3
+add-child s-head g-head
+leaf head head instanceof sphere
+add-child head s-head
+assign-material head head-material
+
+add-child g-head upperbody

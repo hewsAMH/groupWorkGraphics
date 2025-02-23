@@ -23,7 +23,7 @@ Controller::Controller(Model& m,View& v) {
 //edited to use the new text renderer (TextScenegraphRenderer.h)
 void Controller::initScenegraph() {
     //read in the file of commands
-    ifstream inFile("scenegraphmodels/two-humans-commands.txt");
+    ifstream inFile("scenegraphmodels/courtyard-scene-commands.txt");
     //ifstream inFile("tryout.txt");
     sgraph::ScenegraphImporter importer;
 
