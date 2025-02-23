@@ -1,0 +1,1 @@
+-  commit #1 includes everything for part 1 - I  used the original scenographs folder and added Scenegraphs/sgraph/TextScenegraphRenderer.h, then edited Scenegraphs/Controller.cpp Controller::initScenegraph() to create and use the text renderer. 
