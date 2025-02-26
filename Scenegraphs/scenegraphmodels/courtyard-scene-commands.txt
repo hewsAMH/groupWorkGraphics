@@ -31,7 +31,8 @@ end-material
 
 # Create root node and assign it
 group root root
-assign-root root
+# NOTE: Commented this out here because I had to assign the root again after importing the humanoids
+# assign-root root
 
 # Ground plane
 scale ground-scale ground-scale 300 5 300
@@ -113,13 +114,21 @@ leaf pedestal2 pedestal2 instanceof box
 assign-material pedestal2 pedestal-mat
 add-child pedestal2 pedestal2-scale
 
-# Import humanoids
-import looking-humanoid looking-humanoid-commands.txt
-translate looking-humanoid-pos looking-humanoid-pos -50 15 0
+# Humanoid 1 (looking, imported)
+translate looking-humanoid-pos looking-humanoid-pos -30 0 70
 add-child looking-humanoid-pos root
-add-child humanoid-looking looking-humanoid-pos
+scale looking-humanoid-scale looking-humanoid-scale 80 80 80
+add-child looking-humanoid-scale looking-humanoid-pos
+import looking-humanoid scenegraphmodels/dev-looking-humanoid-commands.txt
+add-child looking-humanoid looking-humanoid-scale
 
-import sitting-humanoid sitting-humanoid-commands.txt
-translate sitting-humanoid-pos sitting-humanoid-pos 50 9 0
+# Humanoid 2 (sitting, imported)
+translate sitting-humanoid-pos sitting-humanoid-pos 30 0 50
 add-child sitting-humanoid-pos root
-add-child humanoid-sitting sitting-humanoid-pos
+scale sitting-humanoid-scale sitting-humanoid-scale 80 80 80
+add-child sitting-humanoid-scale sitting-humanoid-pos
+import sitting-humanoid scenegraphmodels/dev-sitting-humanoid-commands.txt
+add-child sitting-humanoid sitting-humanoid-scale
+
+# NOTE: Here's where the root assignment was replaced
+assign-root root
