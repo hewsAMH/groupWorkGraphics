@@ -10,7 +10,19 @@ ambient 0.3 0.5 0.3
 end-material
 
 material building1-mat
-ambient 0.7 0.6 0.5
+ambient 0.45 0.40 0.40
+end-material
+
+material building1-front-mat
+ambient 0.52 0.47 0.47
+end-material
+
+material building1-roof-mat
+ambient 0.59 0.54 0.54
+end-material
+
+material building1-window-mat
+ambient 0.99 0.99 0.59
 end-material
 
 material building2-mat
@@ -18,11 +30,11 @@ ambient 0.6 0.6 0.7
 end-material
 
 material turret-mat
-ambient 0.4 0.4 0.6
+ambient 0.3 0.3 0.5
 end-material
 
 material roof-mat
-ambient 0.7 0.3 0.3
+ambient 0.55 0.2 0.2
 end-material
 
 material pedestal-mat
@@ -55,8 +67,67 @@ leaf building1-body building1-body instanceof box
 assign-material building1-body building1-mat
 add-child building1-body building1-scale
 
+# Roof (shading)
+translate building1-roof-pos building1-roof-pos 0 50 0
+add-child building1-roof-pos building1
+scale building1-roof-scale building1-roof-scale 60 1 40
+add-child building1-roof-scale building1-roof-pos
+leaf building1-roof building1-roof instanceof box
+assign-material building1-roof building1-roof-mat
+add-child building1-roof building1-roof-scale
+
+# Front (shading)
+translate building1-front-pos building1-front-pos 0 0 20
+add-child building1-front-pos building1
+scale building1-front-scale building1-front-scale 60 100 1
+add-child building1-front-scale building1-front-pos
+leaf building1-front building1-front instanceof box
+assign-material building1-front building1-front-mat
+add-child building1-front building1-front-scale
+
+# Window
+translate building1-window-pos building1-window-pos 15 35 21
+add-child building1-window-pos building1
+scale building1-window-scale building1-window-scale 20 20 1
+add-child building1-window-scale building1-window-pos
+leaf building1-window building1-window instanceof box
+assign-material building1-window building1-window-mat
+add-child building1-window building1-window-scale
+
+# another front-facing window
+translate building1-window2-pos building1-window2-pos -15 35 21
+add-child building1-window2-pos building1
+copy building1-window2 building1-window-scale
+add-child building1-window2 building1-window2-pos
+
+# another front-facing window
+translate building1-window3-pos building1-window3-pos -15 10 21
+add-child building1-window3-pos building1
+copy building1-window3 building1-window-scale
+add-child building1-window3 building1-window3-pos
+
+# another front-facing window
+translate building1-window4-pos building1-window4-pos 15 10 21
+add-child building1-window4-pos building1
+copy building1-window4 building1-window-scale
+add-child building1-window4 building1-window4-pos
+
+# side-facing window
+translate building1-sidewindow1-pos building1-sidewindow1-pos 30 35 0
+add-child building1-sidewindow1-pos building1
+scale building1-sidewindow1-scale building1-sidewindow1-scale 1 20 30
+add-child building1-sidewindow1-scale building1-sidewindow1-pos
+copy building1-sidewindow1 building1-window
+add-child building1-sidewindow1 building1-sidewindow1-scale
+
+# another side-facing window
+translate building1-sidewindow2-pos building1-sidewindow2-pos 30 10 0
+add-child building1-sidewindow2-pos building1
+copy building1-sidewindow2 building1-sidewindow1-scale
+add-child building1-sidewindow2 building1-sidewindow2-pos
+
 # Turret
-translate turret-pos turret-pos 20 50 0
+translate turret-pos turret-pos 10 50 0
 add-child turret-pos building1
 scale turret-scale turret-scale 15 40 15
 add-child turret-scale turret-pos
@@ -65,7 +136,7 @@ assign-material turret turret-mat
 add-child turret turret-scale
 
 # Turret roof
-translate turret-roof-pos turret-roof-pos 20 70 0
+translate turret-roof-pos turret-roof-pos 10 90 0
 add-child turret-roof-pos building1
 scale turret-roof-scale turret-roof-scale 20 30 20
 add-child turret-roof-scale turret-roof-pos
@@ -115,7 +186,7 @@ assign-material pedestal2 pedestal-mat
 add-child pedestal2 pedestal2-scale
 
 # Humanoid 1 (looking, imported)
-translate looking-humanoid-pos looking-humanoid-pos -30 0 70
+translate looking-humanoid-pos looking-humanoid-pos 100 90 -25
 add-child looking-humanoid-pos root
 scale looking-humanoid-scale looking-humanoid-scale 80 80 80
 add-child looking-humanoid-scale looking-humanoid-pos
