@@ -52,6 +52,7 @@ void Controller::run()
     view.init(this,meshes);
     while (!view.shouldWindowClose()) {
         view.display(scenegraph);
+        promptAdjustRotation();
     }
     view.closeWindow();
     exit(EXIT_SUCCESS);
@@ -60,6 +61,34 @@ void Controller::run()
 void Controller::onkey(int key, int scancode, int action, int mods)
 {
     cout << (char)key << " pressed" << endl;
+    if (static_cast<char>(key) == 'R') {
+        this->view.resetRotation();
+    }
+    return;
+}
+
+void Controller::promptAdjustRotation() {
+    float speedModifier = 3.0f; /* arbitrary, can adjust for preferred speed */
+    double xpos, ypos;
+    this->view.getCursorPosn(&xpos, &ypos);
+    if (this->lbutton_down) {
+        float deltaX = -static_cast<float>(xpos - this->cursorPosnX);
+        float deltaY = static_cast<float>(ypos - this->cursorPosnY);
+        this->view.adjustRotation('x', glm::radians(deltaX) / speedModifier);
+        this->view.adjustRotation('y', glm::radians(deltaY) / speedModifier);
+    }
+    this->cursorPosnX = xpos;
+    this->cursorPosnY = ypos;
+}
+
+void Controller::onmouse(int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if(GLFW_PRESS == action)
+            this->lbutton_down = true;
+        else if(GLFW_RELEASE == action)
+            this->lbutton_down = false;
+    }
 }
 
 void Controller::reshape(int width, int height) 

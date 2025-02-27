@@ -43,6 +43,18 @@ void View::init(Callbacks *callbacks,map<string,util::PolygonMesh<VertexAttrib>>
         reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onkey(key,scancode,action,mods);
     });
 
+    GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+    glfwSetCursor(window, cursor);
+
+    this->thetaX = 0.0f;
+    this->thetaY = glm::radians(30.0f);
+
+    glfwSetMouseButtonCallback(window,
+    [](GLFWwindow* window, int button, int action, int mods)
+    {
+        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onmouse(button,action,mods);
+    });
+
     glfwSetWindowSizeCallback(window, 
     [](GLFWwindow* window, int width,int height)
     {
@@ -102,6 +114,27 @@ void View::init(Callbacks *callbacks,map<string,util::PolygonMesh<VertexAttrib>>
 }
 
 
+void View::getCursorPosn(double *xpos, double *ypos) {
+    glfwGetCursorPos(this->window, xpos, ypos);
+}
+
+
+void View::resetRotation() {
+    this->thetaX = 0.0f;
+    this->thetaY = glm::radians(30.0f);
+}
+
+
+void View::adjustRotation(char axis, float delta) {
+    if (axis == 'x') {
+        this->thetaX += delta;
+    } else if (axis == 'y') {
+        this->thetaY += delta;
+    }
+    // std::cout << "wanting to adjust in axis " << axis << " by delta " << delta << std::endl;
+    // std::cout << "our x theta is now " << glm::degrees(this->thetaX) << " and y theta is now " << glm::degrees(this->thetaY) << std::endl;
+    return;
+}
 
 
 void View::display(sgraph::IScenegraph *scenegraph) {
@@ -117,8 +150,18 @@ void View::display(sgraph::IScenegraph *scenegraph) {
     
     
     modelview.push(glm::mat4(1.0));
-    modelview.top() = modelview.top() * glm::lookAt(glm::vec3(200.0f,250.0f,250.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
-    //send projection matrix to GPU    
+    float radiusView = 500.0f;
+    glm::vec3 vRotated = {0, 0, 0};
+    vRotated.x = radiusView * cos(this->thetaY) * sin(this->thetaX);
+    vRotated.y = radiusView * sin(this->thetaY);
+    vRotated.z = radiusView * cos(this->thetaY) * cos(this->thetaX);
+    glm::vec3 up = {0, 1, 0};
+    modelview.top() = modelview.top() * glm::lookAt(
+                                            vRotated,
+                                            glm::vec3(0.0f, 0.0f, 0.0f),
+                                            up
+                                        );
+    // send projection matrix to GPU
     glUniformMatrix4fv(shaderLocations.getLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
     
 

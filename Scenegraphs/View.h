@@ -28,6 +28,9 @@ public:
     void display(sgraph::IScenegraph *scenegraph);
     bool shouldWindowClose();
     void closeWindow();
+    void resetRotation();
+    void adjustRotation(char axis, float delta);
+    void getCursorPosn(double *xpos, double *ypos);
 
 private: 
 
@@ -40,6 +43,8 @@ private:
     sgraph::SGNodeVisitor *renderer;
     int frames;
     double time;
+    float thetaX;
+    float thetaY;
 };
 
 #endif
