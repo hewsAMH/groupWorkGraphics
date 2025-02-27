@@ -113,19 +113,24 @@ void View::init(Callbacks *callbacks,map<string,util::PolygonMesh<VertexAttrib>>
     
 }
 
+// getter due to keeping window private
+void View::getWindowScalars(float *scaleX, float *scaleY) {
+    glfwGetWindowContentScale(window,scaleX,scaleY);
+}
 
+// getter due to keeping window private
 void View::getCursorPosn(double *xpos, double *ypos) {
     glfwGetCursorPos(this->window, xpos, ypos);
 }
 
-
+// called externally on keypress
 void View::resetRotation() {
     this->thetaX = 0.0f;
     this->thetaY = glm::radians(30.0f);
     this->upVal = 1;
 }
 
-
+// rotates the trackball on an axis by some radians delta
 void View::adjustRotation(char axis, float delta) {
     if (axis == 'x') {
         this->thetaX += delta;
@@ -153,7 +158,6 @@ void View::adjustRotation(char axis, float delta) {
     return;
 }
 
-
 void View::display(sgraph::IScenegraph *scenegraph) {
     
     program.enable();
@@ -168,6 +172,7 @@ void View::display(sgraph::IScenegraph *scenegraph) {
     
     modelview.push(glm::mat4(1.0));
     float radiusView = 500.0f;
+    // rotating our trackball
     glm::vec3 vRotated = {0, 0, 0};
     vRotated.x = radiusView * cos(this->thetaY) * sin(this->thetaX);
     vRotated.y = radiusView * sin(this->thetaY);
@@ -207,8 +212,6 @@ void View::display(sgraph::IScenegraph *scenegraph) {
 bool View::shouldWindowClose() {
     return glfwWindowShouldClose(window);
 }
-
-
 
 void View::closeWindow() {
     for (map<string,util::ObjectInstance *>::iterator it=objects.begin();

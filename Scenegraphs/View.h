@@ -31,6 +31,7 @@ public:
     void resetRotation();
     void adjustRotation(char axis, float delta);
     void getCursorPosn(double *xpos, double *ypos);
+    void getWindowScalars(float *scaleX, float *scaleY);
 
 private: 
 

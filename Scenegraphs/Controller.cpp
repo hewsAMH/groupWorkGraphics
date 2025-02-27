@@ -60,18 +60,19 @@ void Controller::run()
 
 void Controller::onkey(int key, int scancode, int action, int mods)
 {
-    cout << (char)key << " pressed" << endl;
-    if (static_cast<char>(key) == 'R') {
+    // cout << (char)key << " pressed" << endl;
+    if (static_cast<char>(key) == 'R' || static_cast<char>(key) == 'r') {
         this->view.resetRotation();
     }
     return;
 }
 
+// called repeatedly to update state and view's knowledge of it
 void Controller::promptAdjustRotation() {
     float speedModifier = 3.0f; /* arbitrary, can adjust for preferred speed */
     double xpos, ypos;
     this->view.getCursorPosn(&xpos, &ypos);
-    if (this->lbutton_down) {
+    if (this->lbutton_down) {  // actively holding down mouse
         float deltaX = -static_cast<float>(xpos - this->cursorPosnX);
         float deltaY = static_cast<float>(ypos - this->cursorPosnY);
         this->view.adjustRotation('x', glm::radians(deltaX) / speedModifier);
@@ -81,6 +82,8 @@ void Controller::promptAdjustRotation() {
     this->cursorPosnY = ypos;
 }
 
+// callback added for mouse events
+// toggles a flag on/off for mouse being held
 void Controller::onmouse(int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -94,7 +97,21 @@ void Controller::onmouse(int button, int action, int mods)
 void Controller::reshape(int width, int height) 
 {
     cout <<"Window reshaped to width=" << width << " and height=" << height << endl;
-    glViewport(0, 0, width, height);
+    GLsizei viewSideLength;
+    try {
+        // extra logic here covers retina displays
+        float xScale = 1;
+        float yScale = 1;
+        this->view.getWindowScalars(&xScale, &yScale);
+        int widthScaled = (int)((float)width * xScale);
+        int heightScaled = (int)((float)height * yScale);
+        // maintains the largest square display possible
+        viewSideLength = min(widthScaled, heightScaled);
+        glViewport(0, 0, viewSideLength, viewSideLength);
+    } catch (...) {
+        viewSideLength = min(width, height);
+        glViewport(0, 0, viewSideLength, viewSideLength);
+    }
 }
 
 void Controller::dispose()
