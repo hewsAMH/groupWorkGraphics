@@ -45,6 +45,7 @@ private:
     double time;
     float thetaX;
     float thetaY;
+    int upVal = 1;
 };
 
 #endif

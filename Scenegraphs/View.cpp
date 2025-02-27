@@ -129,6 +129,22 @@ void View::adjustRotation(char axis, float delta) {
     if (axis == 'x') {
         this->thetaX += delta;
     } else if (axis == 'y') {
+        // gimbal lock portion
+        while (this->thetaY < 0.0f) this->thetaY+=glm::radians(360.0f);
+        float thetaYDegBefore = fmod(glm::degrees(this->thetaY), 360.0f);
+        float thetaYDegAfter = fmod(glm::degrees(this->thetaY + delta), 360.0f);
+        if (
+        ((thetaYDegBefore >= 90.0f && thetaYDegAfter < 90.0f)
+            || (thetaYDegAfter >= 90.0f && thetaYDegBefore < 90.0f)
+            || (thetaYDegBefore >= 270.0f && thetaYDegAfter < 270.0f)
+            || (thetaYDegAfter >= 270.0f && thetaYDegBefore < 270.0f))
+        && !(  (thetaYDegBefore < 90.0f && thetaYDegAfter >= 270.0f)
+            || (thetaYDegAfter < 90.0f && thetaYDegBefore >= 270.0f))
+        )
+        {
+            // std::cout << "correcting gimbal lock for " << thetaYDegBefore << " to " << thetaYDegAfter << std::endl;
+            this->upVal = -this->upVal;
+        }
         this->thetaY += delta;
     }
     // std::cout << "wanting to adjust in axis " << axis << " by delta " << delta << std::endl;
@@ -155,7 +171,7 @@ void View::display(sgraph::IScenegraph *scenegraph) {
     vRotated.x = radiusView * cos(this->thetaY) * sin(this->thetaX);
     vRotated.y = radiusView * sin(this->thetaY);
     vRotated.z = radiusView * cos(this->thetaY) * cos(this->thetaX);
-    glm::vec3 up = {0, 1, 0};
+    glm::vec3 up = {0, this->upVal, 0};
     modelview.top() = modelview.top() * glm::lookAt(
                                             vRotated,
                                             glm::vec3(0.0f, 0.0f, 0.0f),
