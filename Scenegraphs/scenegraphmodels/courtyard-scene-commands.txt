@@ -190,7 +190,7 @@ translate looking-humanoid-pos looking-humanoid-pos 100 90 -25
 add-child looking-humanoid-pos root
 scale looking-humanoid-scale looking-humanoid-scale 80 80 80
 add-child looking-humanoid-scale looking-humanoid-pos
-import looking-humanoid scenegraphmodels/dev-looking-humanoid-commands.txt
+import looking-humanoid scenegraphmodels/looking-humanoid-commands.txt
 add-child looking-humanoid looking-humanoid-scale
 
 # Humanoid 2 (sitting, imported)
@@ -198,7 +198,7 @@ translate sitting-humanoid-pos sitting-humanoid-pos 30 0 50
 add-child sitting-humanoid-pos root
 scale sitting-humanoid-scale sitting-humanoid-scale 80 80 80
 add-child sitting-humanoid-scale sitting-humanoid-pos
-import sitting-humanoid scenegraphmodels/dev-sitting-humanoid-commands.txt
+import sitting-humanoid scenegraphmodels/sitting-humanoid-commands.txt
 add-child sitting-humanoid sitting-humanoid-scale
 
 # NOTE: Here's where the root assignment was replaced
