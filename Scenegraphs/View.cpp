@@ -122,6 +122,7 @@ void View::getCursorPosn(double *xpos, double *ypos) {
 void View::resetRotation() {
     this->thetaX = 0.0f;
     this->thetaY = glm::radians(30.0f);
+    this->upVal = 1;
 }
 
 
