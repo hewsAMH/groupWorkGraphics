@@ -1,44 +1,54 @@
-This program implements a simple scene graph, and renders it.
+# Computer Graphics - Scene Graph Implementation
 
-A scene graph has various kinds of nodes:
+## Features Implementation Status
 
-1. Group node: a logical grouping of other nodes in the graph. It can have zero or more children.
+### a. Working Features - all features work as intended in the assignment discription. 
+- **Part 1**: Scene graph text rendering visitor successfully implemented
+  - Correctly displays the hierarchical structure with tabs and hyphens
+  - Properly shows node names as specified in the requirements
 
-2. Leaf node: this is the only node that contains drawable geometry. It remembers an instance of the object to be drawn, so that the same mesh is not copied over in multiple leaves.
+- **Part 2**: Scene creation via commands language
+  - Rectangular ground base implemented
+  - Building structures with turret and appropriate roof
+  - At least 10 instances used in the building design
+  - Modified humanoid scene graphs with various poses (at least 2 different posed humanoids)
+  - Adjacent objects have distinct colors for visual clarity
+  - Meaningful physical structure that could theoretically be 3D printed
 
-3. Transform node: this represents a single transformation. It has a single child. There are three kinds of specific transformations:
-    a. Scale transform
-    b. Translate transform
-    c. Rotate transform
-    
+- **Part 3**: Trackball implementation
+  - Full 3D rotation of the scene using mouse drag
+  - Vertical mouse movement rotates around X axis
+  - Horizontal mouse movement rotates around Y axis
+  - Diagonal movements produce appropriate combined rotations
+  - 'R' key resets the trackball to initial view
+  - No gimbal lock issues
+  - Rotation speed balanced for intuitive control
 
-The Scenegraph class implements a scene graph (specifically the IScenegraph abstract class).
+### b. Non-working Features
+- None. All required features have been successfully implemented.
 
-To implement operations on a scene graph, a visitor pattern is used. The NodeVisitor abstract class represents the interface of a visitor. An example implementation is provided in the GLScenegraphRenderer class, which renders the scene graph using OpenGL.
+## Team Contribution Breakdown
 
-Finally, a command-language is implemented that makes it convenient to specify a scene graph. Some commands it supports are:
+- **Abigail Hews**:
+  - Complete implementation of Part 1 (Scene graph text rendering visitor)
+  - Part 2 implementation, including:
+    - Scene graph command structure
+    - Ground base implementation
+    - Building design and implementation
+    - Material and color management
 
-a. translate variable-name node-name tx ty tz: create a new translate transform node with name "node-name". variable-name is used to refer to this node in the command language
+- **Aidan Johansson**:
+  - Part 2:
+    - Humanoid pose modifications
+    - Scene integration and refinement
+  - Complete implementation of Part 3 (Trackball rotation mechanism)
 
-b. group variable-name node-name: self-explanatory
+## Additional Notes for Graders
 
-c. add-child abc def: Add the node whose variable-name is "abc" as a child of the node whose variable-name is "def"
+- None, all parts work as expected. 
 
-d. assign-material leaf material: Assign to the leaf with variable-name "leaf" the material with variable-name "material"
-
-and so on.
-
-Note that single-line comments are allowed in the command language: a line that begins with # is a comment.
-
-
-Several examples of scene graphs have been given, in the scenegraphmodels folder: 
-
-1. simple.txt: shows a simple scene graph with one box with transformations applied.
-
-2. face-hierarchy-commands.txt: shows a scene graph that creates a clown face with a hat. In comments, the scene graph that is progressively built is shown, for illustration.
-
-3. humanoid-commands.txt: shows a scene graph that creates a humanoid stick figure. Look for comments IN CAPS in the "right arm" part of this file, for an example of how to manipulate this scene graph to change the pose of the humanoid, if need be.
-
-4. face-hierarchy-with-copy-commands.txt: shows an example of a command that allows one to create a copy of part of a scene graph. See towards the end of this file.
-
-5. two-humanoids.txt: shows an example of how one command can be used to import an entire scene graph from another command file. This is helpful when creating a more complicated scene. Instead of writing all the commands in one file, one can create smaller pieces in separate files and then create a "main commands file" that imports them.
+## File Structure
+- `courtyard-scene-commands.txt`: Main scene file that creates all building components
+- `sitting-humanoid-commands.txt`: First posed humanoid definition
+- `looking-humanoid-commands.txt`: Second posed humanoid definition
+- `TextScenegraphRenderer.h`: a new operation on scene graphs that produces such a text rendering
