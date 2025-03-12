@@ -1,0 +1,12 @@
+# C++ dependencies
+*include
+*lib
+
+# Object files
+*.o
+
+# Other Local Files
+*.DS_Store
+*.vscode
+*.cache
+*compile_commands.json
