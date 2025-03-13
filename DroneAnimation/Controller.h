@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 
-//cam. modes
+// cam. modes
 enum CameraMode
 {
     GLOBAL_CAMERA = 0,
@@ -25,19 +25,19 @@ public:
 
     Model &getDrone() { return *drone; }
 
-    //control cam.
+    // control cam.
     void setCameraMode(CameraMode mode) { cameraMode = mode; }
     CameraMode getCameraMode() const { return cameraMode; }
 
-    //get matricies for rendering 
+    // get matricies for rendering
     glm::mat4 getViewMatrix() const;
     glm::mat4 getProjectionMatrix(float aspectRatio) const;
 
 private:
-    //drone mod.
+    // drone mod.
     std::unique_ptr<Model> drone;
 
-    //cam. properties
+    // cam. properties
     CameraMode cameraMode;
     float globalCameraYaw;
     float chopperCameraAngle;
@@ -45,9 +45,9 @@ private:
     bool keys[348];
     void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    //cam. position helpers
+    // cam. position helpers
     glm::vec3 getGlobalCameraPosition() const;
-    glm::vec3 getChopperCameraPosition(float deltaTime);
+    glm::vec3 getChopperCameraPosition(float deltaTime) const;
     glm::vec3 getFirstPersonCameraPosition() const;
     glm::vec3 getGlobalCameraTarget() const;
     glm::vec3 getChopperCameraTarget() const;

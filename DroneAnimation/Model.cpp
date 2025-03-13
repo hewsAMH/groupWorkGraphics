@@ -1,5 +1,5 @@
 #include "Model.h"
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
@@ -13,28 +13,42 @@ Model::Model()
       propellerAngle(0.0f),
       propellerSpeed(5.0f),
       rolling(false),
-      rollAngle(0.0f)
+      rollAngle(0.0f),
+      bodyVAO(0), bodyVBO(0),
+      propellerVAO(0), propellerVBO(0),
+      landingGearVAO(0), landingGearVBO(0)
 {
-    initDrone();
+    std::cout << "Model constructor called" << std::endl;
 }
 
 Model::~Model()
 {
-    glDeleteVertexArrays(1, &bodyVAO);
-    glDeleteBuffers(1, &bodyVBO);
+    if (bodyVAO != 0)
+    {
+        glDeleteVertexArrays(1, &bodyVAO);
+        glDeleteBuffers(1, &bodyVBO);
+    }
 
-    glDeleteVertexArrays(1, &propellerVAO);
-    glDeleteBuffers(1, &propellerVBO);
+    if (propellerVAO != 0)
+    {
+        glDeleteVertexArrays(1, &propellerVAO);
+        glDeleteBuffers(1, &propellerVBO);
+    }
 
-    glDeleteVertexArrays(1, &landingGearVAO);
-    glDeleteBuffers(1, &landingGearVBO);
+    if (landingGearVAO != 0)
+    {
+        glDeleteVertexArrays(1, &landingGearVAO);
+        glDeleteBuffers(1, &landingGearVBO);
+    }
 }
 
 void Model::initDrone()
 {
+    std::cout << "Initializing drone components..." << std::endl;
     createBody();
     createPropellers();
     createLandingGear();
+    std::cout << "Drone components initialized" << std::endl;
 }
 
 void Model::createBody()
@@ -43,11 +57,11 @@ void Model::createBody()
     // positions (3 floats) and colors (3 floats)
     bodyVertices = {
         // nose of the drone (triangles)
-        //front
+        // front
         -1.0f, 0.0f, 2.0f, 0.7f, 0.7f, 0.7f,
-        //top right
+        // top right
         1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
-        //bottom right
+        // bottom right
         1.0f, -0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
 
         -1.0f, 0.0f, 2.0f, 0.7f, 0.7f, 0.7f,
@@ -62,7 +76,7 @@ void Model::createBody()
         -1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
         1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
 
-        //follows the order: front -> baack, top -> bottom, left -> right
+        // follows the order: front -> baack, top -> bottom, left -> right
         -1.0f, 0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
         1.0f, 0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
         1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
@@ -86,8 +100,7 @@ void Model::createBody()
         -1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
         1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
         1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        -1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f
-    };
+        -1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f};
 
     // initialize buffers and load data into them
     glGenVertexArrays(1, &bodyVAO);
@@ -151,11 +164,11 @@ void Model::createPropellers()
     glBindBuffer(GL_ARRAY_BUFFER, propellerVBO);
     glBufferData(GL_ARRAY_BUFFER, propellerVertices.size() * sizeof(GLfloat), propellerVertices.data(), GL_STATIC_DRAW);
 
-    //position
+    // position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)0);
     glEnableVertexAttribArray(0);
 
-    //color
+    // color
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
@@ -185,8 +198,7 @@ void Model::createLandingGear()
         // back rigt leg
         0.8f, -0.5f, -0.8f, 0.4f, 0.4f, 0.4f,
         0.8f, -1.0f, -0.8f, 0.4f, 0.4f, 0.4f,
-        0.9f, -1.0f, -0.9f, 0.4f, 0.4f, 0.4f
-    };
+        0.9f, -1.0f, -0.9f, 0.4f, 0.4f, 0.4f};
 
     // buffers
     glGenVertexArrays(1, &landingGearVAO);
@@ -196,11 +208,11 @@ void Model::createLandingGear()
     glBindBuffer(GL_ARRAY_BUFFER, landingGearVBO);
     glBufferData(GL_ARRAY_BUFFER, landingGearVertices.size() * sizeof(GLfloat), landingGearVertices.data(), GL_STATIC_DRAW);
 
-    //position
+    // position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)0);
     glEnableVertexAttribArray(0);
 
-    //corlor
+    // corlor
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
@@ -210,10 +222,17 @@ void Model::createLandingGear()
 
 void Model::render(GLuint shaderProgram)
 {
-    //set up model matrix
+    // Check if model is initialized
+    if (bodyVAO == 0 || propellerVAO == 0 || landingGearVAO == 0)
+    {
+        std::cerr << "Warning: Attempting to render uninitialized model" << std::endl;
+        return;
+    }
+
+    // set up model matrix
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-    //transformations - translation, rotation, scale
+    // transformations - translation, rotation, scale
     modelMatrix = glm::translate(modelMatrix, position);
 
     modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Yaw (around Y-axis)
@@ -245,7 +264,7 @@ void Model::drawBody(GLuint shaderProgram, const glm::mat4 &modelMatrix)
 
 void Model::drawPropellers(GLuint shaderProgram, const glm::mat4 &modelMatrix)
 {
-    //front left propeler
+    // front left propeler
     glm::mat4 frontLeftProp = glm::translate(modelMatrix, glm::vec3(-1.2f, 0.5f, 1.2f));
     frontLeftProp = glm::rotate(frontLeftProp, propellerAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -256,7 +275,7 @@ void Model::drawPropellers(GLuint shaderProgram, const glm::mat4 &modelMatrix)
     glDrawArrays(GL_TRIANGLE_FAN, 0, 20);
     glBindVertexArray(0);
 
-    //draw front right propeller
+    // draw front right propeller
     glm::mat4 frontRightProp = glm::translate(modelMatrix, glm::vec3(1.2f, 0.5f, 1.2f));
     frontRightProp = glm::rotate(frontRightProp, -propellerAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -266,7 +285,7 @@ void Model::drawPropellers(GLuint shaderProgram, const glm::mat4 &modelMatrix)
     glDrawArrays(GL_TRIANGLE_FAN, 0, 20);
     glBindVertexArray(0);
 
-    //draw back left propeller
+    // draw back left propeller
     glm::mat4 backLeftProp = glm::translate(modelMatrix, glm::vec3(-1.2f, 0.5f, -1.2f));
     backLeftProp = glm::rotate(backLeftProp, -propellerAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -276,7 +295,7 @@ void Model::drawPropellers(GLuint shaderProgram, const glm::mat4 &modelMatrix)
     glDrawArrays(GL_TRIANGLE_FAN, 0, 20);
     glBindVertexArray(0);
 
-    //draw back right prpeller
+    // draw back right prpeller
     glm::mat4 backRightProp = glm::translate(modelMatrix, glm::vec3(1.2f, 0.5f, -1.2f));
     backRightProp = glm::rotate(backRightProp, propellerAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -305,13 +324,13 @@ void Model::updatePropellers(float deltaTime)
     // update propeller rotation -> use time + speed
     propellerAngle += propellerSpeed * deltaTime;
 
-    //make sure angle is within [0, 2*PI]
+    // make sure angle is within [0, 2*PI]
     if (propellerAngle > 2 * M_PI)
     {
         propellerAngle -= 2 * M_PI;
     }
 
-    //edge case - if rolling, update
+    // edge case - if rolling, update
     if (rolling)
     {
         performRoll(deltaTime);
@@ -320,19 +339,19 @@ void Model::updatePropellers(float deltaTime)
 
 void Model::performRoll(float deltaTime)
 {
-    //roll speed cooresponds to propeller speed
+    // roll speed cooresponds to propeller speed
     float rollSpeed = propellerSpeed * 0.2f;
 
     // roll angle
     rollAngle += rollSpeed * deltaTime;
 
-    //roll rotation around Z
+    // roll rotation around Z
     rotation.z = sin(rollAngle) * (float)M_PI;
 
-    //checks if full roatation completed
+    // checks if full roatation completed
     if (rollAngle >= 2 * M_PI)
     {
-        //reset roll
+        // reset roll
         rolling = false;
         rollAngle = 0.0f;
         rotation.z = 0.0f;
@@ -341,37 +360,37 @@ void Model::performRoll(float deltaTime)
 
 void Model::moveForward(float speed)
 {
-    //move in direction drone faces 
+    // move in direction drone faces
     float moveSpeed = speed * propellerSpeed * 0.02f;
 
-    //calc. direction vector
+    // calc. direction vector
     float yaw = rotation.y;
     float dx = sin(yaw) * moveSpeed;
     float dz = cos(yaw) * moveSpeed;
 
-    //update positioin
+    // update positioin
     position.x += dx;
     position.z -= dz;
 }
 
 void Model::moveBackward(float speed)
 {
-    //move opiste of direction drone faces
+    // move opiste of direction drone faces
     float moveSpeed = speed * propellerSpeed * 0.02f;
 
-    //calc. direction
+    // calc. direction
     float yaw = rotation.y;
     float dx = sin(yaw) * moveSpeed;
     float dz = cos(yaw) * moveSpeed;
 
-    //update pos.
+    // update pos.
     position.x -= dx;
-    position.z += dz; 
+    position.z += dz;
 }
 
 void Model::turnLeft(float angle)
 {
-    //left
+    // left
     rotation.y += angle;
 
     if (rotation.y > 2 * M_PI)
@@ -382,10 +401,10 @@ void Model::turnLeft(float angle)
 
 void Model::turnRight(float angle)
 {
-    //clockwise around Y
+    // clockwise around Y
     rotation.y -= angle;
 
-    //keep angle within 2*PI
+    // keep angle within 2*PI
     if (rotation.y < 0)
     {
         rotation.y += 2 * M_PI;
@@ -418,7 +437,7 @@ void Model::turnDown(float angle)
 
 void Model::resetPosition()
 {
-    //rest drone to original position
+    // rest drone to original position
     position = glm::vec3(0.0f, 5.0f, 0.0f);
     rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     rolling = false;

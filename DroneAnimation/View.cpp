@@ -9,7 +9,9 @@
 
 View::View() : window(nullptr), shaderProgram(0), groundVAO(0), groundVBO(0)
 {
-    controller = std::make_unique<Controller>();
+    std::cout << "About to create controller..." << std::endl;
+    controller = std::unique_ptr<Controller>(new Controller());
+    std::cout << "Controller created successfully" << std::endl;
 }
 
 View::~View()
@@ -17,43 +19,57 @@ View::~View()
     cleanup();
 }
 
+
 bool View::init()
 {
-    if (!initGLFW() || !initGLEW())
-    {
-        return false;
-    }
+        std::cout << "Initializing GLFW..." << std::endl;
+        if (!initGLFW())
+        {
+            return false;
+        }
 
-    //initializee shaders
-    if (!initShaders())
-    {
-        return false;
-    }
+        std::cout << "Initializing GLAD..." << std::endl;
+        if (!initGLAD())
+        {
+            return false;
+        }
 
-    //initialize ground plane
-    initGround();
+        std::cout << "Initializing shaders..." << std::endl;
+        if (!initShaders())
+        {
+            return false;
+        }
 
-    //initialize controller
-    controller->init(window);
+        std::cout << "Initializing ground..." << std::endl;
+        initGround();
 
-    //configure OpenGL settings
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+        std::cout << "Initializing controller..." << std::endl;
+        controller->init(window);
 
-    return true;
+        // Now that OpenGL is initialized, we can initialize the drone
+        std::cout << "Initializing drone..." << std::endl;
+        controller->getDrone().initDrone();
+        std::cout << "Drone initialized" << std::endl;
+
+        // configure OpenGL settings
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        std::cout << "View initialization complete" << std::endl;
+
+        return true;
 }
 
 bool View::initGLFW()
 {
-    //initialize GLFW
+    // initialize GLFW
     if (!glfwInit())
     {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return false;
     }
 
-    //configure GLFW
+    // configure GLFW
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -72,20 +88,19 @@ bool View::initGLFW()
     return true;
 }
 
-bool View::initGLEW()
+bool View::initGLAD()
 {
-    // Initialize GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
+    // Initialize GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
+        std::cerr << "Failed to initialize GLAD" << std::endl;
         return false;
     }
 
     return true;
 }
 
-//vertex shader for view
+// vertex shader for view
 const char *vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
@@ -103,7 +118,7 @@ void main() {
 }
 )";
 
-//frag shader for view
+// frag shader for view
 const char *fragmentShaderSource = R"(
 #version 330 core
 in vec3 fragColor;
@@ -116,12 +131,12 @@ void main() {
 
 bool View::initShaders()
 {
-    //complie shaders
+    // complie shaders
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
-    //failsafe for shader errors
+    // failsafe for shader errors
     int success;
     char infoLog[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -132,12 +147,12 @@ bool View::initShaders()
         return false;
     }
 
-    //compile frag shader
+    // compile frag shader
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
 
-    //check for frag shader errors
+    // check for frag shader errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
@@ -146,13 +161,13 @@ bool View::initShaders()
         return false;
     }
 
-    //initalize shader program
+    // initalize shader program
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    //error checking for shader
+    // error checking for shader
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success)
     {
@@ -161,7 +176,7 @@ bool View::initShaders()
         return false;
     }
 
-    //cleanup - deelte used shaders
+    // cleanup - deelte used shaders
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
@@ -170,16 +185,18 @@ bool View::initShaders()
 
 void View::initGround()
 {
+    std::cout << "Starting ground initialization..." << std::endl;
     std::vector<GLfloat> groundVertices;
 
-    //ground plane
+    // ground plane
     float size = 20.0f;
     float gridSize = 1.0f;
     float gridColor[3] = {0.0f, 0.3f, 0.0f};
 
-    //could mqake a helper to factor this out more for DRY
-    // horizontal grid lines
-    //x,y,z,r,g,b
+    // could mqake a helper to factor this out more for DRY
+    //  horizontal grid lines
+    // x,y,z,r,g,b
+    std::cout << "Creating grid vertices..." << std::endl;
     for (float i = -size; i <= size; i += gridSize)
     {
         groundVertices.push_back(-size);
@@ -215,10 +232,10 @@ void View::initGround()
         groundVertices.push_back(gridColor[2]);
     }
 
-    //center marker
+    // center marker
     float markerColor[3] = {1.0f, 0.0f, 0.0f};
 
-    //x
+    // x
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
@@ -233,7 +250,7 @@ void View::initGround()
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
 
-    //z
+    // z
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
@@ -248,7 +265,7 @@ void View::initGround()
     groundVertices.push_back(0.0f);
     groundVertices.push_back(1.0f);
 
-    //y
+    // y
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
     groundVertices.push_back(0.0f);
@@ -263,7 +280,8 @@ void View::initGround()
     groundVertices.push_back(1.0f);
     groundVertices.push_back(0.0f);
 
-    //buffers
+    std::cout << "Setting up OpenGL buffers..." << std::endl;
+    // buffers
     glGenVertexArrays(1, &groundVAO);
     glGenBuffers(1, &groundVBO);
 
@@ -271,27 +289,27 @@ void View::initGround()
     glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
     glBufferData(GL_ARRAY_BUFFER, groundVertices.size() * sizeof(GLfloat), groundVertices.data(), GL_STATIC_DRAW);
 
-    //position
+    // position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)0);
     glEnableVertexAttribArray(0);
 
-    //color
+    // color
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    std::cout << "Ground initialization complete" << std::endl;
 }
 
 void View::run()
 {
-
+    std::cout << "Starting main render loop..." << std::endl;
     float lastFrameTime = 0.0f;
 
     // main render loop
     while (!glfwWindowShouldClose(window))
     {
-
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - lastFrameTime;
         lastFrameTime = currentTime;
@@ -301,25 +319,26 @@ void View::run()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    std::cout << "Main loop ended" << std::endl;
 }
 
 void View::render(float deltaTime)
 {
-    //clear screen
+    // clear screen
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shaderProgram);
 
-    //get window size
+    // get window size
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     float aspectRatio = (float)width / (float)height;
 
-    //view / projection matrices from controller
+    // view / projection matrices from controller
     glm::mat4 viewMatrix = controller->getViewMatrix();
     glm::mat4 projectionMatrix = controller->getProjectionMatrix(aspectRatio);
 
-    //Set vals for view and projection matrices
+    // Set vals for view and projection matrices
     GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
     GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
@@ -336,11 +355,15 @@ void View::render(float deltaTime)
     glDrawArrays(GL_LINES, 0, numGridLines * 2);
     glDrawArrays(GL_LINES, numGridLines * 2, 6);
     glBindVertexArray(0);
+
+    std::cout << "Rendering drone..." << std::endl;
     controller->getDrone().render(shaderProgram);
+    std::cout << "Drone rendered" << std::endl;
 }
 
 void View::cleanup()
 {
+    std::cout << "Cleaning up resources..." << std::endl;
     if (groundVAO)
         glDeleteVertexArrays(1, &groundVAO);
     if (groundVBO)
@@ -353,4 +376,5 @@ void View::cleanup()
         glfwDestroyWindow(window);
     }
     glfwTerminate();
+    std::cout << "Cleanup complete" << std::endl;
 }

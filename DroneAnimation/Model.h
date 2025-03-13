@@ -2,7 +2,7 @@
 #define MODEL_H
 
 #include <vector>
-//#include <GL/glew.h>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -67,7 +67,7 @@ private:
     // prop. rotation speed
     float propellerSpeed;
     // whether the drone is rolling
-    bool rolling; 
+    bool rolling;
     // curent roll angle
     float rollAngle;
 

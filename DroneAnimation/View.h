@@ -1,7 +1,7 @@
 #ifndef VIEW_H
 #define VIEW_H
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Controller.h"
 #include <memory>
@@ -14,26 +14,27 @@ public:
 
     bool init();
     void run();
+    void render(float deltaTime);
+    GLFWwindow *getWindow() { return window; }
 
 private:
-    //window
+    // window
     GLFWwindow *window;
 
-    //controller
+    // controller
     std::unique_ptr<Controller> controller;
 
-    //shader program
+    // shader program
     GLuint shaderProgram;
 
-    //ground plane
+    // ground plane
     GLuint groundVAO, groundVBO;
 
-    //helpers
+    // helpers
     bool initGLFW();
-    bool initGLEW();
+    bool initGLAD();
     bool initShaders();
     void initGround();
-    void render(float deltaTime);
     void cleanup();
 
     GLuint loadShaders(const char *vertexShaderPath, const char *fragmentShaderPath);

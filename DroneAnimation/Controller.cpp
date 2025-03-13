@@ -10,10 +10,9 @@ Controller::Controller()
       globalCameraYaw(0.0f),
       chopperCameraAngle(0.0f)
 {
-    //initialize the drone
-    drone = std::make_unique<Model>();
-
-    //reset the keys 
+    // initialize the drone
+    drone = std::unique_ptr<Model>(new Model());
+    // reset the keys
     for (int i = 0; i < 348; i++)
     {
         keys[i] = false;
@@ -24,7 +23,7 @@ Controller::Controller()
 
 Controller::~Controller()
 {
-    //reset static pointer to default
+    // reset static pointer to default
     if (currentController == this)
     {
         currentController = nullptr;
@@ -35,7 +34,7 @@ void Controller::init(GLFWwindow *window)
 {
     glfwSetKeyCallback(window, key_callback_wrapper);
 
-    //reset position
+    // reset position
     drone->resetPosition();
 }
 
@@ -49,7 +48,7 @@ void Controller::key_callback_wrapper(GLFWwindow *window, int key, int scancode,
 
 void Controller::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    //update the current key
+    // update the current key
     if (key >= 0 && key < 348)
     {
         if (action == GLFW_PRESS)
@@ -62,7 +61,7 @@ void Controller::key_callback(GLFWwindow *window, int key, int scancode, int act
         }
     }
 
-    //handle key presses
+    // handle key presses
     if (action == GLFW_PRESS)
     {
         switch (key)
@@ -96,10 +95,10 @@ void Controller::key_callback(GLFWwindow *window, int key, int scancode, int act
 
 void Controller::update(float deltaTime)
 {
-    //update rotation
+    // update rotation
     drone->updatePropellers(deltaTime);
 
-    //update cam. position
+    // update cam. position
     chopperCameraAngle += 0.3f * deltaTime;
     if (chopperCameraAngle > 2 * M_PI)
     {
@@ -109,7 +108,7 @@ void Controller::update(float deltaTime)
 
 void Controller::processInput(GLFWwindow *window, float deltaTime)
 {
-    //multiple key taps
+    // multiple key taps
     float rotateSpeed = 1.0f * deltaTime;
     float moveSpeed = 1.0f;
 
@@ -175,20 +174,20 @@ glm::mat4 Controller::getViewMatrix() const
 
 glm::mat4 Controller::getProjectionMatrix(float aspectRatio) const
 {
-    //perspective projection
+    // perspective projection
     return glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 }
 
 // cam. positions
 glm::vec3 Controller::getGlobalCameraPosition() const
 {
-    //set the global camera position
+    // set the global camera position
     return glm::vec3(10.0f, 10.0f, 10.0f);
 }
 
 glm::vec3 Controller::getChopperCameraPosition(float deltaTime) const
 {
-    //set the chopper camera position based on the drone's position
+    // set the chopper camera position based on the drone's position
     float radius = 20.0f;
     float height = 15.0f;
     float x = sin(chopperCameraAngle + deltaTime) * radius;
@@ -199,42 +198,42 @@ glm::vec3 Controller::getChopperCameraPosition(float deltaTime) const
 
 glm::vec3 Controller::getFirstPersonCameraPosition() const
 {
-    //set first person cam position in front of drone
+    // set first person cam position in front of drone
     glm::vec3 dronePos = drone->getPosition();
     glm::vec3 droneRot = drone->getRotation();
 
-    //find position
+    // find position
     float yaw = droneRot.y;
     float pitch = droneRot.x;
 
-    //find direction
+    // find direction
     glm::vec3 direction;
     direction.x = sin(yaw) * cos(pitch);
     direction.y = sin(pitch);
     direction.z = cos(yaw) * cos(pitch);
 
-    //normalizing
+    // normalizing
     direction = glm::normalize(direction);
 
-    //set cam location in front of drone
+    // set cam location in front of drone
     return dronePos + direction * 1.5f + glm::vec3(0.0f, 0.5f, 0.0f);
 }
 
 glm::vec3 Controller::getGlobalCameraTarget() const
 {
-    //global cam
+    // global cam
     return drone->getPosition();
 }
 
 glm::vec3 Controller::getChopperCameraTarget() const
 {
-    //chopper cam in center
+    // chopper cam in center
     return drone->getPosition();
 }
 
 glm::vec3 Controller::getFirstPersonCameraTarget() const
 {
-    //first person cam in front of drone
+    // first person cam in front of drone
     glm::vec3 dronePos = drone->getPosition();
     glm::vec3 droneRot = drone->getRotation();
 
@@ -247,7 +246,7 @@ glm::vec3 Controller::getFirstPersonCameraTarget() const
     direction.y = sin(pitch);
     direction.z = cos(yaw) * cos(pitch);
 
-    //normalize direction
+    // normalize direction
     direction = glm::normalize(direction);
 
     return getFirstPersonCameraPosition() + direction * 10.0f;
