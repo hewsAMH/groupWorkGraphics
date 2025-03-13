@@ -186,13 +186,13 @@ glm::vec3 Controller::getGlobalCameraPosition() const
     return glm::vec3(10.0f, 10.0f, 10.0f);
 }
 
-glm::vec3 Controller::getChopperCameraPosition() const
+glm::vec3 Controller::getChopperCameraPosition(float deltaTime) const
 {
     //set the chopper camera position based on the drone's position
     float radius = 20.0f;
     float height = 15.0f;
-    float x = sin(chopperCameraAngle) * radius;
-    float z = cos(chopperCameraAngle) * radius;
+    float x = sin(chopperCameraAngle + deltaTime) * radius;
+    float z = cos(chopperCameraAngle + deltaTime) * radius;
 
     return glm::vec3(x, height, z);
 }
