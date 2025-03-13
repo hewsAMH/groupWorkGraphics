@@ -1,52 +1,42 @@
-#ifndef __VIEW_H__
-#define __VIEW_H__
+#ifndef VIEW_H
+#define VIEW_H
 
-#ifndef GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_NONE
-#endif
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <cstdio>
-#include <ShaderProgram.h>
-#include "sgraph/SGNodeVisitor.h"
-#include "ObjectInstance.h"
-#include "PolygonMesh.h"
-#include "VertexAttrib.h"
-#include "Callbacks.h"
-#include "sgraph/IScenegraph.h"
-
-#include <stack>
-using namespace std;
-
+#include "Controller.h"
+#include <memory>
 
 class View
 {
 public:
     View();
     ~View();
-    void init(Callbacks* callbacks,map<string,util::PolygonMesh<VertexAttrib>>& meshes);
-    void display(sgraph::IScenegraph *scenegraph);
-    bool shouldWindowClose();
-    void closeWindow();
-    void resetRotation();
-    void adjustRotation(char axis, float delta);
-    void getCursorPosn(double *xpos, double *ypos);
-    void getWindowScalars(float *scaleX, float *scaleY);
 
-private: 
+    bool init();
+    void run();
 
-    GLFWwindow* window;
-    util::ShaderProgram program;
-    util::ShaderLocationsVault shaderLocations;
-    map<string,util::ObjectInstance *> objects;
-    glm::mat4 projection;
-    stack<glm::mat4> modelview;
-    sgraph::SGNodeVisitor *renderer;
-    int frames;
-    double time;
-    float thetaX;
-    float thetaY;
-    int upVal = 1;
+private:
+    //window
+    GLFWwindow *window;
+
+    //controller
+    std::unique_ptr<Controller> controller;
+
+    //shader program
+    GLuint shaderProgram;
+
+    //ground plane
+    GLuint groundVAO, groundVBO;
+
+    //helpers
+    bool initGLFW();
+    bool initGLEW();
+    bool initShaders();
+    void initGround();
+    void render(float deltaTime);
+    void cleanup();
+
+    GLuint loadShaders(const char *vertexShaderPath, const char *fragmentShaderPath);
 };
 
-#endif
+#endif // VIEW_H

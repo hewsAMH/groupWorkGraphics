@@ -1,231 +1,356 @@
 #include "View.h"
-#include <cstdio>
-#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
-using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "sgraph/GLScenegraphRenderer.h"
-#include "VertexAttrib.h"
 
-
-View::View() {
-
-}
-
-View::~View(){
-
-}
-
-void View::init(Callbacks *callbacks,map<string,util::PolygonMesh<VertexAttrib>>& meshes) 
+View::View() : window(nullptr), shaderProgram(0), groundVAO(0), groundVBO(0)
 {
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
+    controller = std::make_unique<Controller>();
+}
 
+View::~View()
+{
+    cleanup();
+}
+
+bool View::init()
+{
+    if (!initGLFW() || !initGLEW())
+    {
+        return false;
+    }
+
+    //initializee shaders
+    if (!initShaders())
+    {
+        return false;
+    }
+
+    //initialize ground plane
+    initGround();
+
+    //initialize controller
+    controller->init(window);
+
+    //configure OpenGL settings
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    return true;
+}
+
+bool View::initGLFW()
+{
+    //initialize GLFW
+    if (!glfwInit())
+    {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return false;
+    }
+
+    //configure GLFW
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    window = glfwCreateWindow(800, 800, "Hello GLFW: Per-vertex coloring", NULL, NULL);
+    // Create window
+    window = glfwCreateWindow(800, 600, "Drone Simulation", nullptr, nullptr);
     if (!window)
     {
+        std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        exit(EXIT_FAILURE);
+        return false;
     }
-     glfwSetWindowUserPointer(window, (void *)callbacks);
-
-    //using C++ functions as callbacks to a C-style library
-    glfwSetKeyCallback(window, 
-    [](GLFWwindow* window, int key, int scancode, int action, int mods)
-    {
-        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onkey(key,scancode,action,mods);
-    });
-
-    GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
-    glfwSetCursor(window, cursor);
-
-    this->thetaX = 0.0f;
-    this->thetaY = glm::radians(30.0f);
-
-    glfwSetMouseButtonCallback(window,
-    [](GLFWwindow* window, int button, int action, int mods)
-    {
-        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onmouse(button,action,mods);
-    });
-
-    glfwSetWindowSizeCallback(window, 
-    [](GLFWwindow* window, int width,int height)
-    {
-        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->reshape(width,height);
-    });
 
     glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    glfwSwapInterval(1);
 
-    // create the shader program
-    program.createProgram(string("shaders/default.vert"),
-                          string("shaders/default.frag"));
-    // assuming it got created, get all the shader variables that it uses
-    // so we can initialize them at some point
-    // enable the shader program
-    program.enable();
-    shaderLocations = program.getAllShaderVariables();
+    return true;
+}
 
-    
-    /* In the mesh, we have some attributes for each vertex. In the shader
-     * we have variables for each vertex attribute. We have to provide a mapping
-     * between attribute name in the mesh and corresponding shader variable
-     name.
-     *
-     * This will allow us to use PolygonMesh with any shader program, without
-     * assuming that the attribute names in the mesh and the names of
-     * shader variables will be the same.
-
-       We create such a shader variable -> vertex attribute mapping now
-     */
-    map<string, string> shaderVarsToVertexAttribs;
-
-    shaderVarsToVertexAttribs["vPosition"] = "position";
-    
-    
-    for (typename map<string,util::PolygonMesh<VertexAttrib> >::iterator it=meshes.begin();
-           it!=meshes.end();
-           it++) {
-        util::ObjectInstance * obj = new util::ObjectInstance(it->first);
-        obj->initPolygonMesh(shaderLocations,shaderVarsToVertexAttribs,it->second);
-        objects[it->first] = obj;
+bool View::initGLEW()
+{
+    // Initialize GLEW
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK)
+    {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+        return false;
     }
-    
-	int window_width,window_height;
-    glfwGetFramebufferSize(window,&window_width,&window_height);
 
-    //prepare the projection matrix for perspective projection
-	projection = glm::perspective(glm::radians(60.0f),(float)window_width/window_height,0.1f,10000.0f);
-    glViewport(0, 0, window_width,window_height);
-
-    frames = 0;
-    time = glfwGetTime();
-
-    renderer = new sgraph::GLScenegraphRenderer(modelview,objects,shaderLocations);
-    
+    return true;
 }
 
-// getter due to keeping window private
-void View::getWindowScalars(float *scaleX, float *scaleY) {
-    glfwGetWindowContentScale(window,scaleX,scaleY);
-}
+//vertex shader for view
+const char *vertexShaderSource = R"(
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
 
-// getter due to keeping window private
-void View::getCursorPosn(double *xpos, double *ypos) {
-    glfwGetCursorPos(this->window, xpos, ypos);
-}
+out vec3 fragColor;
 
-// called externally on keypress
-void View::resetRotation() {
-    this->thetaX = 0.0f;
-    this->thetaY = glm::radians(30.0f);
-    this->upVal = 1;
-}
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
-// rotates the trackball on an axis by some radians delta
-void View::adjustRotation(char axis, float delta) {
-    if (axis == 'x') {
-        this->thetaX += delta;
-    } else if (axis == 'y') {
-        // gimbal lock portion
-        while (this->thetaY < 0.0f) this->thetaY+=glm::radians(360.0f);
-        float thetaYDegBefore = fmod(glm::degrees(this->thetaY), 360.0f);
-        float thetaYDegAfter = fmod(glm::degrees(this->thetaY + delta), 360.0f);
-        if (
-        ((thetaYDegBefore >= 90.0f && thetaYDegAfter < 90.0f)
-            || (thetaYDegAfter >= 90.0f && thetaYDegBefore < 90.0f)
-            || (thetaYDegBefore >= 270.0f && thetaYDegAfter < 270.0f)
-            || (thetaYDegAfter >= 270.0f && thetaYDegBefore < 270.0f))
-        && !(  (thetaYDegBefore < 90.0f && thetaYDegAfter >= 270.0f)
-            || (thetaYDegAfter < 90.0f && thetaYDegBefore >= 270.0f))
-        )
-        {
-            // std::cout << "correcting gimbal lock for " << thetaYDegBefore << " to " << thetaYDegAfter << std::endl;
-            this->upVal = -this->upVal;
-        }
-        this->thetaY += delta;
+void main() {
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    fragColor = aColor;
+}
+)";
+
+//frag shader for view
+const char *fragmentShaderSource = R"(
+#version 330 core
+in vec3 fragColor;
+out vec4 FragColor;
+
+void main() {
+    FragColor = vec4(fragColor, 1.0);
+}
+)";
+
+bool View::initShaders()
+{
+    //complie shaders
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    //failsafe for shader errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        return false;
     }
-    // std::cout << "wanting to adjust in axis " << axis << " by delta " << delta << std::endl;
-    // std::cout << "our x theta is now " << glm::degrees(this->thetaX) << " and y theta is now " << glm::degrees(this->thetaY) << std::endl;
-    return;
-}
 
-void View::display(sgraph::IScenegraph *scenegraph) {
-    
-    program.enable();
-    glClearColor(0,0,0,1);
-    glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT_FACE);
+    //compile frag shader
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
 
-    
-    
-    modelview.push(glm::mat4(1.0));
-    float radiusView = 500.0f;
-    // rotating our trackball
-    glm::vec3 vRotated = {0, 0, 0};
-    vRotated.x = radiusView * cos(this->thetaY) * sin(this->thetaX);
-    vRotated.y = radiusView * sin(this->thetaY);
-    vRotated.z = radiusView * cos(this->thetaY) * cos(this->thetaX);
-    glm::vec3 up = {0, this->upVal, 0};
-    modelview.top() = modelview.top() * glm::lookAt(
-                                            vRotated,
-                                            glm::vec3(0.0f, 0.0f, 0.0f),
-                                            up
-                                        );
-    // send projection matrix to GPU
-    glUniformMatrix4fv(shaderLocations.getLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    
-
-    //draw scene graph here
-    scenegraph->getRoot()->accept(renderer);
-
-    
-    
-    modelview.pop();
-    glFlush();
-    program.disable();
-    
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    frames++;
-    double currenttime = glfwGetTime();
-    if ((currenttime-time)>1.0) {
-        printf("Framerate: %2.0f\r",frames/(currenttime-time));
-        frames = 0;
-        time = currenttime;
+    //check for frag shader errors
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cerr << "Fragment shader compilation failed: " << infoLog << std::endl;
+        return false;
     }
-    
 
+    //initalize shader program
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    //error checking for shader
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cerr << "Shader program linking failed: " << infoLog << std::endl;
+        return false;
+    }
+
+    //cleanup - deelte used shaders
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return true;
 }
 
-bool View::shouldWindowClose() {
-    return glfwWindowShouldClose(window);
+void View::initGround()
+{
+    std::vector<GLfloat> groundVertices;
+
+    //ground plane
+    float size = 20.0f;
+    float gridSize = 1.0f;
+    float gridColor[3] = {0.0f, 0.3f, 0.0f};
+
+    //could mqake a helper to factor this out more for DRY
+    // horizontal grid lines
+    //x,y,z,r,g,b
+    for (float i = -size; i <= size; i += gridSize)
+    {
+        groundVertices.push_back(-size);
+        groundVertices.push_back(0.0f);
+        groundVertices.push_back(i);
+        groundVertices.push_back(gridColor[0]);
+        groundVertices.push_back(gridColor[1]);
+        groundVertices.push_back(gridColor[2]);
+
+        groundVertices.push_back(size);
+        groundVertices.push_back(0.0f);
+        groundVertices.push_back(i);
+        groundVertices.push_back(gridColor[0]);
+        groundVertices.push_back(gridColor[1]);
+        groundVertices.push_back(gridColor[2]);
+    }
+
+    // vertical grid lines
+    for (float i = -size; i <= size; i += gridSize)
+    {
+        groundVertices.push_back(i);
+        groundVertices.push_back(0.0f);
+        groundVertices.push_back(-size);
+        groundVertices.push_back(gridColor[0]);
+        groundVertices.push_back(gridColor[1]);
+        groundVertices.push_back(gridColor[2]);
+
+        groundVertices.push_back(i);
+        groundVertices.push_back(0.0f);
+        groundVertices.push_back(size);
+        groundVertices.push_back(gridColor[0]);
+        groundVertices.push_back(gridColor[1]);
+        groundVertices.push_back(gridColor[2]);
+    }
+
+    //center marker
+    float markerColor[3] = {1.0f, 0.0f, 0.0f};
+
+    //x
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(1.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+
+    groundVertices.push_back(2.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(1.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+
+    //z
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(1.0f);
+
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(2.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(1.0f);
+
+    //y
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(1.0f);
+    groundVertices.push_back(0.0f);
+
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(2.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(0.0f);
+    groundVertices.push_back(1.0f);
+    groundVertices.push_back(0.0f);
+
+    //buffers
+    glGenVertexArrays(1, &groundVAO);
+    glGenBuffers(1, &groundVBO);
+
+    glBindVertexArray(groundVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
+    glBufferData(GL_ARRAY_BUFFER, groundVertices.size() * sizeof(GLfloat), groundVertices.data(), GL_STATIC_DRAW);
+
+    //position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    //color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
-void View::closeWindow() {
-    for (map<string,util::ObjectInstance *>::iterator it=objects.begin();
-           it!=objects.end();
-           it++) {
-          it->second->cleanup();
-          delete it->second;
-    } 
-    glfwDestroyWindow(window);
+void View::run()
+{
 
+    float lastFrameTime = 0.0f;
+
+    // main render loop
+    while (!glfwWindowShouldClose(window))
+    {
+
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
+        controller->processInput(window, deltaTime);
+        controller->update(deltaTime);
+        render(deltaTime);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+void View::render(float deltaTime)
+{
+    //clear screen
+    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(shaderProgram);
+
+    //get window size
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    float aspectRatio = (float)width / (float)height;
+
+    //view / projection matrices from controller
+    glm::mat4 viewMatrix = controller->getViewMatrix();
+    glm::mat4 projectionMatrix = controller->getProjectionMatrix(aspectRatio);
+
+    //Set vals for view and projection matrices
+    GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+    GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+    // Draw ground plane
+    glm::mat4 groundModel = glm::mat4(1.0f);
+    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(groundModel));
+
+    glBindVertexArray(groundVAO);
+
+    int numGridLines = int(2 * 20.0f / 1.0f) * 2 + 2;
+    glDrawArrays(GL_LINES, 0, numGridLines * 2);
+    glDrawArrays(GL_LINES, numGridLines * 2, 6);
+    glBindVertexArray(0);
+    controller->getDrone().render(shaderProgram);
+}
+
+void View::cleanup()
+{
+    if (groundVAO)
+        glDeleteVertexArrays(1, &groundVAO);
+    if (groundVBO)
+        glDeleteBuffers(1, &groundVBO);
+    if (shaderProgram)
+        glDeleteProgram(shaderProgram);
+
+    if (window)
+    {
+        glfwDestroyWindow(window);
+    }
     glfwTerminate();
 }
-
-
-
-
-
