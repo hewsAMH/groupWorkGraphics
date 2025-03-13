@@ -1,125 +1,254 @@
 #include "Controller.h"
-#include "sgraph/IScenegraph.h"
-#include "sgraph/Scenegraph.h"
-#include "sgraph/GroupNode.h"
-#include "sgraph/LeafNode.h"
-#include "sgraph/ScaleTransform.h"
-#include "ObjImporter.h"
-using namespace sgraph;
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
-using namespace std;
 
-#include "sgraph/TextScenegraphRenderer.h"
-#include "sgraph/ScenegraphExporter.h"
-#include "sgraph/ScenegraphImporter.h"
+Controller *currentController = nullptr;
 
-Controller::Controller(Model& m,View& v) {
-    model = m;
-    view = v;
+Controller::Controller()
+    : cameraMode(GLOBAL_CAMERA),
+      globalCameraYaw(0.0f),
+      chopperCameraAngle(0.0f)
+{
+    //initialize the drone
+    drone = std::make_unique<Model>();
 
-    initScenegraph();
-}
+    //reset the keys 
+    for (int i = 0; i < 348; i++)
+    {
+        keys[i] = false;
+    }
 
-//edited to use the new text renderer (TextScenegraphRenderer.h)
-void Controller::initScenegraph() {
-    //read in the file of commands
-    ifstream inFile("scenegraphmodels/courtyard-scene-commands.txt");
-    //ifstream inFile("tryout.txt");
-    sgraph::ScenegraphImporter importer;
-
-    IScenegraph *scenegraph = importer.parse(inFile);
-    //scenegraph->setMeshes(meshes);
-    model.setScenegraph(scenegraph);
-    cout << "Scenegraph made" << endl;   
-
-    //create + use the text renderer
-    sgraph::TextScenegraphRenderer renderer;
-    scenegraph->getRoot()->accept(&renderer);
-    string textRepresentation = renderer.getOutput();
-    cout << "\nScene Graph Structure:\n" << textRepresentation << endl;  
-
+    currentController = this;
 }
 
 Controller::~Controller()
 {
-    
-}
-
-void Controller::run()
-{
-    sgraph::IScenegraph * scenegraph = model.getScenegraph();
-    map<string,util::PolygonMesh<VertexAttrib> > meshes = scenegraph->getMeshes();
-    view.init(this,meshes);
-    while (!view.shouldWindowClose()) {
-        view.display(scenegraph);
-        promptAdjustRotation();
-    }
-    view.closeWindow();
-    exit(EXIT_SUCCESS);
-}
-
-void Controller::onkey(int key, int scancode, int action, int mods)
-{
-    // cout << (char)key << " pressed" << endl;
-    if (static_cast<char>(key) == 'R' || static_cast<char>(key) == 'r') {
-        this->view.resetRotation();
-    }
-    return;
-}
-
-// called repeatedly to update state and view's knowledge of it
-void Controller::promptAdjustRotation() {
-    float speedModifier = 3.0f; /* arbitrary, can adjust for preferred speed */
-    double xpos, ypos;
-    this->view.getCursorPosn(&xpos, &ypos);
-    if (this->lbutton_down) {  // actively holding down mouse
-        float deltaX = -static_cast<float>(xpos - this->cursorPosnX);
-        float deltaY = static_cast<float>(ypos - this->cursorPosnY);
-        this->view.adjustRotation('x', glm::radians(deltaX) / speedModifier);
-        this->view.adjustRotation('y', glm::radians(deltaY) / speedModifier);
-    }
-    this->cursorPosnX = xpos;
-    this->cursorPosnY = ypos;
-}
-
-// callback added for mouse events
-// toggles a flag on/off for mouse being held
-void Controller::onmouse(int button, int action, int mods)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        if(GLFW_PRESS == action)
-            this->lbutton_down = true;
-        else if(GLFW_RELEASE == action)
-            this->lbutton_down = false;
+    //reset static pointer to default
+    if (currentController == this)
+    {
+        currentController = nullptr;
     }
 }
 
-void Controller::reshape(int width, int height) 
+void Controller::init(GLFWwindow *window)
 {
-    cout <<"Window reshaped to width=" << width << " and height=" << height << endl;
-    GLsizei viewSideLength;
-    try {
-        // extra logic here covers retina displays
-        float xScale = 1;
-        float yScale = 1;
-        this->view.getWindowScalars(&xScale, &yScale);
-        int widthScaled = (int)((float)width * xScale);
-        int heightScaled = (int)((float)height * yScale);
-        // maintains the largest square display possible
-        viewSideLength = min(widthScaled, heightScaled);
-        glViewport(0, 0, viewSideLength, viewSideLength);
-    } catch (...) {
-        viewSideLength = min(width, height);
-        glViewport(0, 0, viewSideLength, viewSideLength);
+    glfwSetKeyCallback(window, key_callback_wrapper);
+
+    //reset position
+    drone->resetPosition();
+}
+
+void Controller::key_callback_wrapper(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    if (currentController)
+    {
+        currentController->key_callback(window, key, scancode, action, mods);
     }
 }
 
-void Controller::dispose()
+void Controller::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    view.closeWindow();
+    //update the current key
+    if (key >= 0 && key < 348)
+    {
+        if (action == GLFW_PRESS)
+        {
+            keys[key] = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            keys[key] = false;
+        }
+    }
+
+    //handle key presses
+    if (action == GLFW_PRESS)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_1:
+            cameraMode = GLOBAL_CAMERA;
+            break;
+        case GLFW_KEY_2:
+            cameraMode = CHOPPER_CAMERA;
+            break;
+        case GLFW_KEY_3:
+            cameraMode = FIRST_PERSON_CAMERA;
+            break;
+        case GLFW_KEY_J:
+            drone->startRoll();
+            break;
+        case GLFW_KEY_D:
+            drone->resetPosition();
+            break;
+        case GLFW_KEY_S:
+            drone->setPropellerSpeed(std::max(1.0f, drone->getPropellerSpeed() - 1.0f));
+            std::cout << "Propeller speed: " << drone->getPropellerSpeed() << std::endl;
+            break;
+        case GLFW_KEY_F:
+            drone->setPropellerSpeed(std::min(15.0f, drone->getPropellerSpeed() + 1.0f));
+            std::cout << "Propeller speed: " << drone->getPropellerSpeed() << std::endl;
+            break;
+        }
+    }
 }
 
-void Controller::error_callback(int error, const char* description)
+void Controller::update(float deltaTime)
 {
-    fprintf(stderr, "Error: %s\n", description);
+    //update rotation
+    drone->updatePropellers(deltaTime);
+
+    //update cam. position
+    chopperCameraAngle += 0.3f * deltaTime;
+    if (chopperCameraAngle > 2 * M_PI)
+    {
+        chopperCameraAngle -= 2 * M_PI;
+    }
+}
+
+void Controller::processInput(GLFWwindow *window, float deltaTime)
+{
+    //multiple key taps
+    float rotateSpeed = 1.0f * deltaTime;
+    float moveSpeed = 1.0f;
+
+    if (!drone->isRolling())
+    {
+
+        // forward + backward movement
+        if (keys[GLFW_KEY_EQUAL] || keys[GLFW_KEY_KP_ADD])
+        {
+            // Forward +
+            drone->moveForward(moveSpeed);
+        }
+        if (keys[GLFW_KEY_MINUS] || keys[GLFW_KEY_KP_SUBTRACT])
+        {
+            // Backward -
+            drone->moveBackward(moveSpeed);
+        }
+
+        // turns
+        if (keys[GLFW_KEY_LEFT])
+        {
+            drone->turnLeft(rotateSpeed);
+        }
+        if (keys[GLFW_KEY_RIGHT])
+        {
+            drone->turnRight(rotateSpeed);
+        }
+        if (keys[GLFW_KEY_UP])
+        {
+            drone->turnUp(rotateSpeed);
+        }
+        if (keys[GLFW_KEY_DOWN])
+        {
+            drone->turnDown(rotateSpeed);
+        }
+    }
+}
+
+glm::mat4 Controller::getViewMatrix() const
+{
+    glm::vec3 cameraPos;
+    glm::vec3 cameraTarget;
+    glm::vec3 upVector(0.0f, 1.0f, 0.0f);
+
+    switch (cameraMode)
+    {
+    case GLOBAL_CAMERA:
+        cameraPos = getGlobalCameraPosition();
+        cameraTarget = getGlobalCameraTarget();
+        break;
+    case CHOPPER_CAMERA:
+        cameraPos = getChopperCameraPosition(0.0f);
+        cameraTarget = getChopperCameraTarget();
+        break;
+    case FIRST_PERSON_CAMERA:
+        cameraPos = getFirstPersonCameraPosition();
+        cameraTarget = getFirstPersonCameraTarget();
+        break;
+    }
+
+    return glm::lookAt(cameraPos, cameraTarget, upVector);
+}
+
+glm::mat4 Controller::getProjectionMatrix(float aspectRatio) const
+{
+    //perspective projection
+    return glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+}
+
+// cam. positions
+glm::vec3 Controller::getGlobalCameraPosition() const
+{
+    //set the global camera position
+    return glm::vec3(10.0f, 10.0f, 10.0f);
+}
+
+glm::vec3 Controller::getChopperCameraPosition() const
+{
+    //set the chopper camera position based on the drone's position
+    float radius = 20.0f;
+    float height = 15.0f;
+    float x = sin(chopperCameraAngle) * radius;
+    float z = cos(chopperCameraAngle) * radius;
+
+    return glm::vec3(x, height, z);
+}
+
+glm::vec3 Controller::getFirstPersonCameraPosition() const
+{
+    //set first person cam position in front of drone
+    glm::vec3 dronePos = drone->getPosition();
+    glm::vec3 droneRot = drone->getRotation();
+
+    //find position
+    float yaw = droneRot.y;
+    float pitch = droneRot.x;
+
+    //find direction
+    glm::vec3 direction;
+    direction.x = sin(yaw) * cos(pitch);
+    direction.y = sin(pitch);
+    direction.z = cos(yaw) * cos(pitch);
+
+    //normalizing
+    direction = glm::normalize(direction);
+
+    //set cam location in front of drone
+    return dronePos + direction * 1.5f + glm::vec3(0.0f, 0.5f, 0.0f);
+}
+
+glm::vec3 Controller::getGlobalCameraTarget() const
+{
+    //global cam
+    return drone->getPosition();
+}
+
+glm::vec3 Controller::getChopperCameraTarget() const
+{
+    //chopper cam in center
+    return drone->getPosition();
+}
+
+glm::vec3 Controller::getFirstPersonCameraTarget() const
+{
+    //first person cam in front of drone
+    glm::vec3 dronePos = drone->getPosition();
+    glm::vec3 droneRot = drone->getRotation();
+
+    // calc. direction
+    float yaw = droneRot.y;
+    float pitch = droneRot.x;
+
+    glm::vec3 direction;
+    direction.x = sin(yaw) * cos(pitch);
+    direction.y = sin(pitch);
+    direction.z = cos(yaw) * cos(pitch);
+
+    //normalize direction
+    direction = glm::normalize(direction);
+
+    return getFirstPersonCameraPosition() + direction * 10.0f;
 }
