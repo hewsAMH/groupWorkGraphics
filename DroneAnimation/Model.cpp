@@ -346,11 +346,14 @@ void Model::performRoll(float deltaTime)
     rollAngle += rollSpeed * deltaTime;
 
     // roll rotation around Z
-    rotation.z = sin(rollAngle) * (float)M_PI;
+    rotation.z = rollAngle * (float)M_PI;
+    // DEBUG: std::cout << "rotation z - " << rotation.z << std::endl;
+    // DEBUG: std::cout << "roll angle - " << rollAngle << std::endl;
 
     // checks if full roatation completed
-    if (rollAngle >= 2 * M_PI)
+    if (rotation.z >= 2 * M_PI)
     {
+        // DEBUG: std::cout << "roll done" << std::endl;
         // reset roll
         rolling = false;
         rollAngle = 0.0f;
