@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
+#include <cmath>
+#include <glm/gtc/matrix_transform.hpp>
 
 Model::Model()
     : position(0.0f, 5.0f, 0.0f),
@@ -296,4 +298,129 @@ void Model::drawLandingGear(GLuint shaderProgram, const glm::mat4 &modelMatrix)
     glDrawArrays(GL_TRIANGLE_STRIP, 6, 3);
     glDrawArrays(GL_TRIANGLE_STRIP, 9, 3);
     glBindVertexArray(0);
+}
+
+void Model::updatePropellers(float deltaTime)
+{
+    // update propeller rotation -> use time + speed
+    propellerAngle += propellerSpeed * deltaTime;
+
+    //make sure angle is within [0, 2*PI]
+    if (propellerAngle > 2 * M_PI)
+    {
+        propellerAngle -= 2 * M_PI;
+    }
+
+    //edge case - if rolling, update
+    if (rolling)
+    {
+        performRoll(deltaTime);
+    }
+}
+
+void Model::performRoll(float deltaTime)
+{
+    //roll speed cooresponds to propeller speed
+    float rollSpeed = propellerSpeed * 0.2f;
+
+    // roll angle
+    rollAngle += rollSpeed * deltaTime;
+
+    //roll rotation around Z
+    rotation.z = sin(rollAngle) * (float)M_PI;
+
+    //checks if full roatation completed
+    if (rollAngle >= 2 * M_PI)
+    {
+        //reset roll
+        rolling = false;
+        rollAngle = 0.0f;
+        rotation.z = 0.0f;
+    }
+}
+
+void Model::moveForward(float speed)
+{
+    //move in direction drone faces 
+    float moveSpeed = speed * propellerSpeed * 0.02f;
+
+    //calc. direction vector
+    float yaw = rotation.y;
+    float dx = sin(yaw) * moveSpeed;
+    float dz = cos(yaw) * moveSpeed;
+
+    //update positioin
+    position.x += dx;
+    position.z -= dz;
+}
+
+void Model::moveBackward(float speed)
+{
+    //move opiste of direction drone faces
+    float moveSpeed = speed * propellerSpeed * 0.02f;
+
+    //calc. direction
+    float yaw = rotation.y;
+    float dx = sin(yaw) * moveSpeed;
+    float dz = cos(yaw) * moveSpeed;
+
+    //update pos.
+    position.x -= dx;
+    position.z += dz; 
+}
+
+void Model::turnLeft(float angle)
+{
+    //left
+    rotation.y += angle;
+
+    if (rotation.y > 2 * M_PI)
+    {
+        rotation.y -= 2 * M_PI;
+    }
+}
+
+void Model::turnRight(float angle)
+{
+    //clockwise around Y
+    rotation.y -= angle;
+
+    //keep angle within 2*PI
+    if (rotation.y < 0)
+    {
+        rotation.y += 2 * M_PI;
+    }
+}
+
+void Model::turnUp(float angle)
+{
+    // rotate drone around X
+    rotation.x += angle;
+
+    // avoids flipping
+    if (rotation.x > M_PI / 4)
+    {
+        rotation.x = M_PI / 4;
+    }
+}
+
+void Model::turnDown(float angle)
+{
+    // rotate drone aorund X
+    rotation.x -= angle;
+
+    // keep angle in a reasonable range
+    if (rotation.x < -M_PI / 4)
+    {
+        rotation.x = -M_PI / 4;
+    }
+}
+
+void Model::resetPosition()
+{
+    //rest drone to original position
+    position = glm::vec3(0.0f, 5.0f, 0.0f);
+    rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+    rolling = false;
+    rollAngle = 0.0f;
 }
