@@ -58,23 +58,29 @@ void Model::createBody()
     bodyVertices = {
         // nose of the drone (triangles)
         // front
-        -1.0f, 0.0f, 2.0f, 0.7f, 0.7f, 0.7f,
+        0.0f, 0.0f, 2.0f, 0.5f, 0.5f, 0.5f, // front
         // top right
-        1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
+        1.0f, 0.5f, 1.0f, 0.5f, 0.5f, 0.5f, // tr
         // bottom right
-        1.0f, -0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
+        1.0f, -0.5f, 1.0f, 0.5f, 0.5f, 0.5f, // br
+        // top right
+        1.0f, 0.5f, 1.0f, 0.5f, 0.5f, 0.5f, // tr
 
-        -1.0f, 0.0f, 2.0f, 0.7f, 0.7f, 0.7f,
-        1.0f, -0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
-        -1.0f, -0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
+        // ... ->
+        1.0f, -0.5f, 1.0f, 0.3f, 0.3f, 0.3f, // br
+        -1.0f, -0.5f, 1.0f, 0.3f, 0.3f, 0.3f, // bl
+        0.0f, 0.0f, 2.0f, 0.3f, 0.3f, 0.3f, // front
+        -1.0f, -0.5f, 1.0f, 0.3f, 0.3f, 0.3f, // bl
 
-        -1.0f, 0.0f, 2.0f, 0.7f, 0.7f, 0.7f,
-        -1.0f, -0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
-        -1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
+        -1.0f, 0.5f, 1.0f, 0.5f, 0.5f, 0.5f, // tl
+        -1.0f, -0.5f, 1.0f, 0.5f, 0.5f, 0.5f, // bl
+        0.0f, 0.0f, 2.0f, 0.5f, 0.5f, 0.5f, // front
+        -1.0f, -0.5f, 1.0f, 0.5f, 0.5f, 0.5f, // bl
 
-        -1.0f, 0.0f, 2.0f, 0.7f, 0.7f, 0.7f,
-        -1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
-        1.0f, 0.5f, 1.0f, 0.7f, 0.7f, 0.7f,
+        1.0f, 0.5f, 1.0f, 0.8f, 0.8f, 0.8f, // tr
+        -1.0f, 0.5f, 1.0f, 0.8f, 0.8f, 0.8f, // tl
+        0.0f, 0.0f, 2.0f, 0.8f, 0.8f, 0.8f, // front
+        -1.0f, 0.5f, 1.0f, 0.8f, 0.8f, 0.8f, // tl
 
         // follows the order: front -> baack, top -> bottom, left -> right
         -1.0f, 0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
@@ -82,25 +88,25 @@ void Model::createBody()
         1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
         -1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
 
-        -1.0f, 0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
-        -1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        -1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        -1.0f, -0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
+        -1.0f, 0.5f, 1.0f, 0.4f, 0.4f, 0.4f,
+        -1.0f, 0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
+        -1.0f, -0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
+        -1.0f, -0.5f, 1.0f, 0.4f, 0.4f, 0.4f,
 
-        -1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, -0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
-        -1.0f, -0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
+        -1.0f, -0.5f, -1.0f, 0.2f, 0.2f, 0.2f,
+        1.0f, -0.5f, -1.0f, 0.2f, 0.2f, 0.2f,
+        1.0f, -0.5f, 1.0f, 0.2f, 0.2f, 0.2f,
+        -1.0f, -0.5f, 1.0f, 0.2f, 0.2f, 0.2f,
 
-        1.0f, 0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, -0.5f, 1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
+        1.0f, 0.5f, 1.0f, 0.4f, 0.4f, 0.4f,
+        1.0f, -0.5f, 1.0f, 0.4f, 0.4f, 0.4f,
+        1.0f, -0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
+        1.0f, 0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
 
-        -1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, 0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f,
-        -1.0f, -0.5f, -1.0f, 0.6f, 0.6f, 0.6f};
+        1.0f, 0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
+        1.0f, -0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
+        -1.0f, -0.5f, -1.0f, 0.4f, 0.4f, 0.4f,
+        -1.0f, 0.5f, -1.0f, 0.4f, 0.4f, 0.4f};
 
     // initialize buffers and load data into them
     glGenVertexArrays(1, &bodyVAO);
@@ -184,21 +190,25 @@ void Model::createLandingGear()
         -0.8f, -0.5f, 0.8f, 0.4f, 0.4f, 0.4f,
         -0.8f, -1.0f, 0.8f, 0.4f, 0.4f, 0.4f,
         -0.9f, -1.0f, 0.9f, 0.4f, 0.4f, 0.4f,
+        -0.8f, -1.0f, 0.8f, 0.4f, 0.4f, 0.4f,
 
         // front right leg
         0.8f, -0.5f, 0.8f, 0.4f, 0.4f, 0.4f,
         0.8f, -1.0f, 0.8f, 0.4f, 0.4f, 0.4f,
         0.9f, -1.0f, 0.9f, 0.4f, 0.4f, 0.4f,
+        0.8f, -1.0f, 0.8f, 0.4f, 0.4f, 0.4f,
 
         // back left leg
         -0.8f, -0.5f, -0.8f, 0.4f, 0.4f, 0.4f,
         -0.8f, -1.0f, -0.8f, 0.4f, 0.4f, 0.4f,
         -0.9f, -1.0f, -0.9f, 0.4f, 0.4f, 0.4f,
+        -0.8f, -1.0f, -0.8f, 0.4f, 0.4f, 0.4f,
 
         // back rigt leg
         0.8f, -0.5f, -0.8f, 0.4f, 0.4f, 0.4f,
         0.8f, -1.0f, -0.8f, 0.4f, 0.4f, 0.4f,
-        0.9f, -1.0f, -0.9f, 0.4f, 0.4f, 0.4f};
+        0.9f, -1.0f, -0.9f, 0.4f, 0.4f, 0.4f,
+        0.8f, -1.0f, -0.8f, 0.4f, 0.4f, 0.4f};
 
     // buffers
     glGenVertexArrays(1, &landingGearVAO);
@@ -259,6 +269,9 @@ void Model::drawBody(GLuint shaderProgram, const glm::mat4 &modelMatrix)
     glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
     glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
     glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 24, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 28, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 32, 4);
     glBindVertexArray(0);
 }
 
@@ -312,10 +325,10 @@ void Model::drawLandingGear(GLuint shaderProgram, const glm::mat4 &modelMatrix)
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
     glBindVertexArray(landingGearVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-    glDrawArrays(GL_TRIANGLE_STRIP, 3, 3);
-    glDrawArrays(GL_TRIANGLE_STRIP, 6, 3);
-    glDrawArrays(GL_TRIANGLE_STRIP, 9, 3);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
     glBindVertexArray(0);
 }
 
