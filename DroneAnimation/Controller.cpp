@@ -228,7 +228,7 @@ glm::vec3 Controller::getGlobalCameraTarget() const
 glm::vec3 Controller::getChopperCameraTarget() const
 {
     // chopper cam in center
-    return drone->getPosition();
+    return glm::vec3(0.0f, 5.0f, 0.0f);
 }
 
 glm::vec3 Controller::getFirstPersonCameraTarget() const
