@@ -450,9 +450,9 @@ void Model::turnUp(float angle)
     rotation.x -= angle;
 
     // avoids flipping
-    if (rotation.x > M_PI / 4)
+    if (rotation.x <= -M_PI / 4)
     {
-        rotation.x = M_PI / 4;
+        rotation.x = -M_PI / 4;
     }
 }
 
@@ -462,9 +462,9 @@ void Model::turnDown(float angle)
     rotation.x += angle;
 
     // keep angle in a reasonable range
-    if (rotation.x < -M_PI / 4)
+    if (rotation.x >= M_PI / 4)
     {
-        rotation.x = -M_PI / 4;
+        rotation.x = M_PI / 4;
     }
 }
 
