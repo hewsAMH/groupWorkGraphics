@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "glm/fwd.hpp"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -374,19 +375,39 @@ void Model::performRoll(float deltaTime)
     }
 }
 
+
+glm::vec3 Model::getAdvancement(float scalar) const
+{
+    // set first person cam position in front of drone
+    glm::vec3 dronePos = this->getPosition();
+    glm::vec3 droneRot = this->getRotation();
+
+    // find position
+    float yaw = droneRot.y;
+    float pitch = droneRot.x;
+
+    // find direction
+    glm::vec3 direction;
+    direction.x = sin(yaw) * cos(pitch);
+    direction.y = -sin(pitch);
+    direction.z = cos(yaw) * cos(pitch);
+
+    // normalizing
+    direction = glm::normalize(direction);
+
+    // set cam location in front of drone
+    return dronePos + (direction * scalar);
+}
+
 void Model::moveForward(float speed)
 {
     // move in direction drone faces
     float moveSpeed = speed * propellerSpeed * 0.02f;
 
-    // calc. direction vector
-    float yaw = rotation.y;
-    float dx = sin(yaw) * moveSpeed;
-    float dz = cos(yaw) * moveSpeed;
-
-    // update positioin
-    position.x += dx;
-    position.z -= dz;
+    glm::vec3 newPosn = this->getAdvancement(moveSpeed * 1);
+    this->position.x = newPosn.x;
+    this->position.y = newPosn.y;
+    this->position.z = newPosn.z;
 }
 
 void Model::moveBackward(float speed)
@@ -394,14 +415,10 @@ void Model::moveBackward(float speed)
     // move opiste of direction drone faces
     float moveSpeed = speed * propellerSpeed * 0.02f;
 
-    // calc. direction
-    float yaw = rotation.y;
-    float dx = sin(yaw) * moveSpeed;
-    float dz = cos(yaw) * moveSpeed;
-
-    // update pos.
-    position.x -= dx;
-    position.z += dz;
+    glm::vec3 newPosn = this->getAdvancement(moveSpeed * -1);
+    this->position.x = newPosn.x;
+    this->position.y = newPosn.y;
+    this->position.z = newPosn.z;
 }
 
 void Model::turnLeft(float angle)
@@ -430,7 +447,7 @@ void Model::turnRight(float angle)
 void Model::turnUp(float angle)
 {
     // rotate drone around X
-    rotation.x += angle;
+    rotation.x -= angle;
 
     // avoids flipping
     if (rotation.x > M_PI / 4)
@@ -442,7 +459,7 @@ void Model::turnUp(float angle)
 void Model::turnDown(float angle)
 {
     // rotate drone aorund X
-    rotation.x -= angle;
+    rotation.x += angle;
 
     // keep angle in a reasonable range
     if (rotation.x < -M_PI / 4)

@@ -216,7 +216,7 @@ glm::vec3 Controller::getFirstPersonCameraPosition() const
     direction = glm::normalize(direction);
 
     // set cam location in front of drone
-    return dronePos + direction * 1.5f + glm::vec3(0.0f, 0.5f, 0.0f);
+    return dronePos + direction * 3.0f + glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
 glm::vec3 Controller::getGlobalCameraTarget() const
@@ -239,7 +239,7 @@ glm::vec3 Controller::getFirstPersonCameraTarget() const
 
     // calc. direction
     float yaw = droneRot.y;
-    float pitch = droneRot.x;
+    float pitch = -droneRot.x;
 
     glm::vec3 direction;
     direction.x = sin(yaw) * cos(pitch);

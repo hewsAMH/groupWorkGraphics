@@ -35,6 +35,7 @@ public:
     void turnUp(float angle);
     void turnDown(float angle);
     void resetPosition();
+    glm::vec3 getAdvancement(float scalar) const;
 
     // edge case - rolling
     void performRoll(float deltaTime);
