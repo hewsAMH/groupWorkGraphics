@@ -19,7 +19,7 @@ Model::Model()
       propellerVAO(0), propellerVBO(0),
       landingGearVAO(0), landingGearVBO(0)
 {
-    std::cout << "Model constructor called" << std::endl;
+    // DEBUG: std::cout << "Model constructor called" << std::endl;
 }
 
 Model::~Model()
@@ -45,11 +45,11 @@ Model::~Model()
 
 void Model::initDrone()
 {
-    std::cout << "Initializing drone components..." << std::endl;
+    // DEBUG: std::cout << "Initializing drone components..." << std::endl;
     createBody();
     createPropellers();
     createLandingGear();
-    std::cout << "Drone components initialized" << std::endl;
+    // DEBUG: std::cout << "Drone components initialized" << std::endl;
 }
 
 void Model::createBody()

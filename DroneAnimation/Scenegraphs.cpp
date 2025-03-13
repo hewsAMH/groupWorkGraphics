@@ -6,14 +6,14 @@
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Starting program..." << std::endl;
+    // DEBUG: std::cout << "Starting program..." << std::endl;
 
     // Create view
-    std::cout << "Creating view..." << std::endl;
+    // DEBUG: std::cout << "Creating view..." << std::endl;
     View view;
 
     // Initialize view (creates window, sets up OpenGL)
-    std::cout << "Initializing view..." << std::endl;
+    // DEBUG: std::cout << "Initializing view..." << std::endl;
     if (!view.init())
     {
         std::cerr << "Failed to initialize view" << std::endl;
@@ -21,9 +21,9 @@ int main(int argc, char *argv[])
     }
 
     // Run the main loop
-    std::cout << "Running main loop..." << std::endl;
+    // DEBUG: std::cout << "Running main loop..." << std::endl;
     view.run();
 
-    std::cout << "Program completed successfully" << std::endl;
+    // DEBUG: std::cout << "Program completed successfully" << std::endl;
     return 0;
 }

@@ -9,9 +9,9 @@
 
 View::View() : window(nullptr), shaderProgram(0), groundVAO(0), groundVBO(0)
 {
-    std::cout << "About to create controller..." << std::endl;
+    // DEBUG: std::cout << "About to create controller..." << std::endl;
     controller = std::unique_ptr<Controller>(new Controller());
-    std::cout << "Controller created successfully" << std::endl;
+    // DEBUG: std::cout << "Controller created successfully" << std::endl;
 }
 
 View::~View()
@@ -22,40 +22,40 @@ View::~View()
 
 bool View::init()
 {
-        std::cout << "Initializing GLFW..." << std::endl;
+        // DEBUG: std::cout << "Initializing GLFW..." << std::endl;
         if (!initGLFW())
         {
             return false;
         }
 
-        std::cout << "Initializing GLAD..." << std::endl;
+        // DEBUG: std::cout << "Initializing GLAD..." << std::endl;
         if (!initGLAD())
         {
             return false;
         }
 
-        std::cout << "Initializing shaders..." << std::endl;
+        // DEBUG: std::cout << "Initializing shaders..." << std::endl;
         if (!initShaders())
         {
             return false;
         }
 
-        std::cout << "Initializing ground..." << std::endl;
+        // DEBUG: std::cout << "Initializing ground..." << std::endl;
         initGround();
 
-        std::cout << "Initializing controller..." << std::endl;
+        // DEBUG: std::cout << "Initializing controller..." << std::endl;
         controller->init(window);
 
         // Now that OpenGL is initialized, we can initialize the drone
-        std::cout << "Initializing drone..." << std::endl;
+        // DEBUG: std::cout << "Initializing drone..." << std::endl;
         controller->getDrone().initDrone();
-        std::cout << "Drone initialized" << std::endl;
+        // DEBUG: std::cout << "Drone initialized" << std::endl;
 
         // configure OpenGL settings
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
-        std::cout << "View initialization complete" << std::endl;
+        // DEBUG: std::cout << "View initialization complete" << std::endl;
 
         return true;
 }
@@ -185,7 +185,7 @@ bool View::initShaders()
 
 void View::initGround()
 {
-    std::cout << "Starting ground initialization..." << std::endl;
+    // DEBUG: std::cout << "Starting ground initialization..." << std::endl;
     std::vector<GLfloat> groundVertices;
 
     // ground plane
@@ -196,7 +196,7 @@ void View::initGround()
     // could mqake a helper to factor this out more for DRY
     //  horizontal grid lines
     // x,y,z,r,g,b
-    std::cout << "Creating grid vertices..." << std::endl;
+    // DEBUG: std::cout << "Creating grid vertices..." << std::endl;
     for (float i = -size; i <= size; i += gridSize)
     {
         groundVertices.push_back(-size);
@@ -280,7 +280,7 @@ void View::initGround()
     groundVertices.push_back(1.0f);
     groundVertices.push_back(0.0f);
 
-    std::cout << "Setting up OpenGL buffers..." << std::endl;
+    // DEBUG: std::cout << "Setting up OpenGL buffers..." << std::endl;
     // buffers
     glGenVertexArrays(1, &groundVAO);
     glGenBuffers(1, &groundVBO);
@@ -299,12 +299,12 @@ void View::initGround()
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    std::cout << "Ground initialization complete" << std::endl;
+    // DEBUG: std::cout << "Ground initialization complete" << std::endl;
 }
 
 void View::run()
 {
-    std::cout << "Starting main render loop..." << std::endl;
+    // DEBUG: std::cout << "Starting main render loop..." << std::endl;
     float lastFrameTime = 0.0f;
 
     // main render loop
@@ -319,7 +319,7 @@ void View::run()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    std::cout << "Main loop ended" << std::endl;
+    // DEBUG: std::cout << "Main loop ended" << std::endl;
 }
 
 void View::render(float deltaTime)
@@ -356,14 +356,14 @@ void View::render(float deltaTime)
     glDrawArrays(GL_LINES, numGridLines * 2, 6);
     glBindVertexArray(0);
 
-    std::cout << "Rendering drone..." << std::endl;
+    // DEBUG: std::cout << "Rendering drone..." << std::endl;
     controller->getDrone().render(shaderProgram);
-    std::cout << "Drone rendered" << std::endl;
+    // DEBUG: std::cout << "Drone rendered" << std::endl;
 }
 
 void View::cleanup()
 {
-    std::cout << "Cleaning up resources..." << std::endl;
+    // DEBUG: std::cout << "Cleaning up resources..." << std::endl;
     if (groundVAO)
         glDeleteVertexArrays(1, &groundVAO);
     if (groundVBO)
@@ -376,5 +376,5 @@ void View::cleanup()
         glfwDestroyWindow(window);
     }
     glfwTerminate();
-    std::cout << "Cleanup complete" << std::endl;
+    // DEBUG: std::cout << "Cleanup complete" << std::endl;
 }
