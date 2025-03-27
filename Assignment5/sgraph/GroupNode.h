@@ -2,6 +2,7 @@
 #define _GROUPNODE_H_
 
 #include "ParentSGNode.h"
+#include "SGNodeVisitor.h"
 #include "glm/glm.hpp"
 #include <vector>
 #include <stack>

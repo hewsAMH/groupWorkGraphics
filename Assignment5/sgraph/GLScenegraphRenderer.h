@@ -11,6 +11,7 @@
 #include <ShaderProgram.h>
 #include <ShaderLocationsVault.h>
 #include "ObjectInstance.h"
+#include "glm/gtc/type_ptr.hpp"
 #include <stack>
 #include <iostream>
 using namespace std;
