@@ -4,53 +4,126 @@ instance box models/box.obj
 instance cylinder models/cylinder.obj
 instance cone models/cone.obj
 
+# Texture images
+image earth textures/earthmap.ppm
+image checkerboard textures/checkerboard.ppm
+image sample_640x426 textures/sample_640x426.ppm
+image tree_1 textures/tree_1.ppm
+image west_1 textures/west_1.ppm
+
+# Lights
+light main-light
+    ambient 0.4 0.4 0.4
+    diffuse 0.6 0.6 0.6
+    specular 0.5 0.5 0.5
+    position 0 200 100
+end-light
+
+light building1-light
+    ambient 0.2 0.2 0.3
+    diffuse 0.7 0.7 0.8
+    specular 0.6 0.6 0.7
+    position -100 150 0
+    spot-direction 0 -1 0
+    spot-angle 45
+end-light
+
+light building2-light
+    ambient 0.3 0.3 0.2
+    diffuse 0.8 0.8 0.7
+    specular 0.7 0.7 0.6
+    position 100 150 0
+    spot-direction 0 -1 0
+    spot-angle 45
+end-light
+
 # Materials defined up front
 material ground-mat
-ambient 0.3 0.5 0.3
+    emission 0 0 0
+    ambient 0.3 0.5 0.3
+    diffuse 0.4 0.7 0.4
+    specular 0.1 0.1 0.1
+    shininess 5
 end-material
 
 material building1-mat
-ambient 0.45 0.40 0.40
+    emission 0 0 0
+    ambient 0.45 0.40 0.40
+    diffuse 0.65 0.60 0.60
+    specular 0.3 0.3 0.3
+    shininess 20
 end-material
 
 material building1-front-mat
-ambient 0.52 0.47 0.47
+    emission 0 0 0
+    ambient 0.52 0.47 0.47
+    diffuse 0.72 0.67 0.67
+    specular 0.4 0.4 0.4
+    shininess 30
 end-material
 
-material building1-roof-mat
-ambient 0.59 0.54 0.54
+material building1-tree_1-mat
+    emission 0 0 0
+    ambient 0.59 0.54 0.54
+    diffuse 0.79 0.74 0.74
+    specular 0.2 0.2 0.2
+    shininess 10
 end-material
 
-material building1-window-mat
-ambient 0.99 0.99 0.59
+material building1-sample_640x426-mat
+    emission 0.3 0.3 0.1
+    ambient 0.99 0.99 0.59
+    diffuse 0.99 0.99 0.59
+    specular 0.9 0.9 0.7
+    shininess 100
 end-material
 
 material building2-mat
-ambient 0.6 0.6 0.7
+    emission 0 0 0
+    ambient 0.6 0.6 0.7
+    diffuse 0.7 0.7 0.8
+    specular 0.5 0.5 0.6
+    shininess 40
 end-material
 
 material turret-mat
-ambient 0.3 0.3 0.5
+    emission 0 0 0
+    ambient 0.3 0.3 0.5
+    diffuse 0.5 0.5 0.7
+    specular 0.4 0.4 0.6
+    shininess 50
 end-material
 
-material roof-mat
-ambient 0.55 0.2 0.2
+material tree_1-mat
+    emission 0 0 0
+    ambient 0.55 0.2 0.2
+    diffuse 0.75 0.3 0.3
+    specular 0.4 0.2 0.2
+    shininess 30
 end-material
 
 material pedestal-mat
-ambient 0.5 0.5 0.5
+    emission 0 0 0
+    ambient 0.5 0.5 0.5
+    diffuse 0.7 0.7 0.7
+    specular 0.9 0.9 0.9
+    shininess 80
 end-material
 
 # Create root node and assign it
 group root root
-# NOTE: Commented this out here because I had to assign the root again after importing the humanoids
-# assign-root root
+
+# Assign lights to root
+assign-light main-light root
+assign-light building1-light root
+assign-light building2-light root
 
 # Ground plane
 scale ground-scale ground-scale 300 5 300
 add-child ground-scale root
 leaf ground ground instanceof box
 assign-material ground ground-mat
+assign-texture ground tree_1
 add-child ground ground-scale
 
 # Building 1 with turret
@@ -65,16 +138,18 @@ scale building1-scale building1-scale 60 100 40
 add-child building1-scale building1
 leaf building1-body building1-body instanceof box
 assign-material building1-body building1-mat
+assign-texture building1-body earth
 add-child building1-body building1-scale
 
-# Roof (shading)
-translate building1-roof-pos building1-roof-pos 0 50 0
-add-child building1-roof-pos building1
-scale building1-roof-scale building1-roof-scale 60 1 40
-add-child building1-roof-scale building1-roof-pos
-leaf building1-roof building1-roof instanceof box
-assign-material building1-roof building1-roof-mat
-add-child building1-roof building1-roof-scale
+# tree_1 (shading)
+translate building1-tree_1-pos building1-tree_1-pos 0 50 0
+add-child building1-tree_1-pos building1
+scale building1-tree_1-scale building1-tree_1-scale 60 1 40
+add-child building1-tree_1-scale building1-tree_1-pos
+leaf building1-tree_1 building1-tree_1 instanceof box
+assign-material building1-tree_1 building1-tree_1-mat
+assign-texture building1-tree_1 tree_1
+add-child building1-tree_1 building1-tree_1-scale
 
 # Front (shading)
 translate building1-front-pos building1-front-pos 0 0 20
@@ -83,48 +158,50 @@ scale building1-front-scale building1-front-scale 60 100 1
 add-child building1-front-scale building1-front-pos
 leaf building1-front building1-front instanceof box
 assign-material building1-front building1-front-mat
+assign-texture building1-front earth
 add-child building1-front building1-front-scale
 
-# Window
-translate building1-window-pos building1-window-pos 15 35 21
-add-child building1-window-pos building1
-scale building1-window-scale building1-window-scale 20 20 1
-add-child building1-window-scale building1-window-pos
-leaf building1-window building1-window instanceof box
-assign-material building1-window building1-window-mat
-add-child building1-window building1-window-scale
+# sample_640x426
+translate building1-sample_640x426-pos building1-sample_640x426-pos 15 35 21
+add-child building1-sample_640x426-pos building1
+scale building1-sample_640x426-scale building1-sample_640x426-scale 20 20 1
+add-child building1-sample_640x426-scale building1-sample_640x426-pos
+leaf building1-sample_640x426 building1-sample_640x426 instanceof box
+assign-material building1-sample_640x426 building1-sample_640x426-mat
+assign-texture building1-sample_640x426 sample_640x426
+add-child building1-sample_640x426 building1-sample_640x426-scale
 
-# another front-facing window
-translate building1-window2-pos building1-window2-pos -15 35 21
-add-child building1-window2-pos building1
-copy building1-window2 building1-window-scale
-add-child building1-window2 building1-window2-pos
+# another front-facing sample_640x426
+translate building1-sample_640x4262-pos building1-sample_640x4262-pos -15 35 21
+add-child building1-sample_640x4262-pos building1
+copy building1-sample_640x4262 building1-sample_640x426-scale
+add-child building1-sample_640x4262 building1-sample_640x4262-pos
 
-# another front-facing window
-translate building1-window3-pos building1-window3-pos -15 10 21
-add-child building1-window3-pos building1
-copy building1-window3 building1-window-scale
-add-child building1-window3 building1-window3-pos
+# another front-facing sample_640x426
+translate building1-sample_640x4263-pos building1-sample_640x4263-pos -15 10 21
+add-child building1-sample_640x4263-pos building1
+copy building1-sample_640x4263 building1-sample_640x426-scale
+add-child building1-sample_640x4263 building1-sample_640x4263-pos
 
-# another front-facing window
-translate building1-window4-pos building1-window4-pos 15 10 21
-add-child building1-window4-pos building1
-copy building1-window4 building1-window-scale
-add-child building1-window4 building1-window4-pos
+# another front-facing sample_640x426
+translate building1-sample_640x4264-pos building1-sample_640x4264-pos 15 10 21
+add-child building1-sample_640x4264-pos building1
+copy building1-sample_640x4264 building1-sample_640x426-scale
+add-child building1-sample_640x4264 building1-sample_640x4264-pos
 
-# side-facing window
-translate building1-sidewindow1-pos building1-sidewindow1-pos 30 35 0
-add-child building1-sidewindow1-pos building1
-scale building1-sidewindow1-scale building1-sidewindow1-scale 1 20 30
-add-child building1-sidewindow1-scale building1-sidewindow1-pos
-copy building1-sidewindow1 building1-window
-add-child building1-sidewindow1 building1-sidewindow1-scale
+# side-facing sample_640x426
+translate building1-sidesample_640x4261-pos building1-sidesample_640x4261-pos 30 35 0
+add-child building1-sidesample_640x4261-pos building1
+scale building1-sidesample_640x4261-scale building1-sidesample_640x4261-scale 1 20 30
+add-child building1-sidesample_640x4261-scale building1-sidesample_640x4261-pos
+copy building1-sidesample_640x4261 building1-sample_640x426
+add-child building1-sidesample_640x4261 building1-sidesample_640x4261-scale
 
-# another side-facing window
-translate building1-sidewindow2-pos building1-sidewindow2-pos 30 10 0
-add-child building1-sidewindow2-pos building1
-copy building1-sidewindow2 building1-sidewindow1-scale
-add-child building1-sidewindow2 building1-sidewindow2-pos
+# another side-facing sample_640x426
+translate building1-sidesample_640x4262-pos building1-sidesample_640x4262-pos 30 10 0
+add-child building1-sidesample_640x4262-pos building1
+copy building1-sidesample_640x4262 building1-sidesample_640x4261-scale
+add-child building1-sidesample_640x4262 building1-sidesample_640x4262-pos
 
 # Turret
 translate turret-pos turret-pos 10 50 0
@@ -133,16 +210,18 @@ scale turret-scale turret-scale 15 40 15
 add-child turret-scale turret-pos
 leaf turret turret instanceof cylinder
 assign-material turret turret-mat
+assign-texture turret checkerboard
 add-child turret turret-scale
 
-# Turret roof
-translate turret-roof-pos turret-roof-pos 10 90 0
-add-child turret-roof-pos building1
-scale turret-roof-scale turret-roof-scale 20 30 20
-add-child turret-roof-scale turret-roof-pos
-leaf turret-roof turret-roof instanceof cone
-assign-material turret-roof roof-mat
-add-child turret-roof turret-roof-scale
+# Turret tree_1
+translate turret-tree_1-pos turret-tree_1-pos 10 90 0
+add-child turret-tree_1-pos building1
+scale turret-tree_1-scale turret-tree_1-scale 20 30 20
+add-child turret-tree_1-scale turret-tree_1-pos
+leaf turret-tree_1 turret-tree_1 instanceof cone
+assign-material turret-tree_1 tree_1-mat
+assign-texture turret-tree_1 tree_1
+add-child turret-tree_1 turret-tree_1-scale
 
 # Building 2
 translate building2-pos building2-pos 100 40 -50
@@ -156,16 +235,18 @@ scale building2-scale building2-scale 50 80 40
 add-child building2-scale building2
 leaf building2-body building2-body instanceof box
 assign-material building2-body building2-mat
+assign-texture building2-body checkerboard
 add-child building2-body building2-scale
 
-# Building 2 roof
-translate building2-roof-pos building2-roof-pos 0 40 0
-add-child building2-roof-pos building2
-scale building2-roof-scale building2-roof-scale 55 20 45
-add-child building2-roof-scale building2-roof-pos
-leaf building2-roof building2-roof instanceof cone
-assign-material building2-roof roof-mat
-add-child building2-roof building2-roof-scale
+# Building 2 tree_1
+translate building2-tree_1-pos building2-tree_1-pos 0 40 0
+add-child building2-tree_1-pos building2
+scale building2-tree_1-scale building2-tree_1-scale 55 20 45
+add-child building2-tree_1-scale building2-tree_1-pos
+leaf building2-tree_1 building2-tree_1 instanceof cone
+assign-material building2-tree_1 tree_1-mat
+assign-texture building2-tree_1 tree_1
+add-child building2-tree_1 building2-tree_1-scale
 
 # Pedestal 1
 translate pedestal1-pos pedestal1-pos -50 5 0
@@ -174,6 +255,7 @@ scale pedestal1-scale pedestal1-scale 10 10 10
 add-child pedestal1-scale pedestal1-pos
 leaf pedestal1 pedestal1 instanceof box
 assign-material pedestal1 pedestal-mat
+assign-texture pedestal1 west_1
 add-child pedestal1 pedestal1-scale
 
 # Pedestal 2 (bench-like)
@@ -183,6 +265,7 @@ scale pedestal2-scale pedestal2-scale 15 6 10
 add-child pedestal2-scale pedestal2-pos
 leaf pedestal2 pedestal2 instanceof box
 assign-material pedestal2 pedestal-mat
+assign-texture pedestal2 checkerboard
 add-child pedestal2 pedestal2-scale
 
 # Humanoid 1 (looking, imported)
@@ -201,5 +284,5 @@ add-child sitting-humanoid-scale sitting-humanoid-pos
 import sitting-humanoid scenegraphmodels/sitting-humanoid-commands.txt
 add-child sitting-humanoid sitting-humanoid-scale
 
-# NOTE: Here's where the root assignment was replaced
+# Final root assignment
 assign-root root
