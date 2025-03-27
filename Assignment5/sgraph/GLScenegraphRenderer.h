@@ -12,8 +12,6 @@
 #include <ShaderLocationsVault.h>
 #include "ObjectInstance.h"
 #include "glm/gtc/type_ptr.hpp"
-#include "../LightUtils.h"
-#include "../TextureUtils.h"
 #include <stack>
 #include <iostream>
 #include <vector>
@@ -26,6 +24,83 @@ namespace sgraph
      */
     class GLScenegraphRenderer : public SGNodeVisitor
     {
+    private:
+        stack<glm::mat4> &modelview;
+        util::ShaderLocationsVault shaderLocations;
+        map<string, util::ObjectInstance *> objects;
+        map<string, util::TextureImage> textures;
+        vector<util::Light> lights;
+        int maxLights;
+
+        /**
+         * Create and store texture IDs for each texture
+         */
+        class TextureManager
+        {
+        public:
+            TextureManager() {}
+
+            // Create texture IDs for all textures in the map
+            void createTextureIDs(map<string, util::TextureImage> &textures)
+            {
+                for (auto it = textures.begin(); it != textures.end(); ++it)
+                {
+                    if (textureIDs.find(it->first) == textureIDs.end())
+                    {
+                        GLuint textureID;
+                        glGenTextures(1, &textureID);
+                        glBindTexture(GL_TEXTURE_2D, textureID);
+
+                        // Set texture parameters for mipmapping
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                        // Upload texture data
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, it->second.getWidth(), it->second.getHeight(),
+                                     0, GL_RGB, GL_UNSIGNED_BYTE, it->second.getImage());
+
+                        // Generate mipmaps
+                        glGenerateMipmap(GL_TEXTURE_2D);
+
+                        textureIDs[it->first] = textureID;
+                    }
+                }
+            }
+
+            // Bind a texture by name
+            void bindTexture(const string &textureName, GLenum textureUnit = GL_TEXTURE0)
+            {
+                if (textureIDs.find(textureName) != textureIDs.end())
+                {
+                    glActiveTexture(textureUnit);
+                    glBindTexture(GL_TEXTURE_2D, textureIDs[textureName]);
+                }
+            }
+
+            // Check if a texture exists
+            bool hasTexture(const string &textureName)
+            {
+                return textureIDs.find(textureName) != textureIDs.end();
+            }
+
+            // Clean up textures
+            void cleanup()
+            {
+                for (auto it = textureIDs.begin(); it != textureIDs.end(); ++it)
+                {
+                    glDeleteTextures(1, &it->second);
+                }
+                textureIDs.clear();
+            }
+
+        private:
+            map<string, GLuint> textureIDs;
+        };
+
+        TextureManager textureManager;
+
     public:
         /**
          * @brief Construct a new GLScenegraphRenderer object
@@ -124,13 +199,13 @@ namespace sgraph
                     glUniform4fv(shaderLocations.getLocation(prefix + "position"), 1, glm::value_ptr(lights[i].getPosition()));
 
                     // For spotlights
-                    if (util::isSpotlight(lights[i]))
+                    if (lights[i].getSpotCutoff() > 0.0f)
                     {
                         glUniform4fv(shaderLocations.getLocation(prefix + "spotDirection"), 1, glm::value_ptr(lights[i].getSpotDirection()));
                         glUniform1f(shaderLocations.getLocation(prefix + "spotCutoff"), cos(glm::radians(lights[i].getSpotCutoff())));
                         glUniform1i(shaderLocations.getLocation(prefix + "type"), 2); // 2 = SPOT
                     }
-                    else if (util::isDirectional(lights[i]))
+                    else if (lights[i].getPosition().w == 0.0f)
                     {
                         glUniform1i(shaderLocations.getLocation(prefix + "type"), 1); // 1 = DIRECTIONAL
                     }
@@ -144,11 +219,12 @@ namespace sgraph
             // Handle texture
             if (shaderLocations.getLocation("useTexture") >= 0)
             {
-                if (leafNode->getTexture().getName() != "" && textureManager.hasTexture(leafNode->getTexture().getName()))
+                string texName = leafNode->getTexture().getName();
+                if (texName != "" && textureManager.hasTexture(texName))
                 {
                     glUniform1i(shaderLocations.getLocation("useTexture"), 1);
                     glUniform1i(shaderLocations.getLocation("image"), 0); // Use texture unit 0
-                    textureManager.bindTexture(leafNode->getTexture().getName(), GL_TEXTURE0);
+                    textureManager.bindTexture(texName, GL_TEXTURE0);
                 }
                 else
                 {
@@ -193,15 +269,6 @@ namespace sgraph
         {
             textureManager.cleanup();
         }
-
-    private:
-        stack<glm::mat4> &modelview;
-        util::ShaderLocationsVault shaderLocations;
-        map<string, util::ObjectInstance *> objects;
-        map<string, util::TextureImage> textures;
-        vector<util::Light> lights;
-        int maxLights;
-        util::TextureManager textureManager;
     };
 }
 
