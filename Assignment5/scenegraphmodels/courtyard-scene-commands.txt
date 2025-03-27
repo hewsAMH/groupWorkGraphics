@@ -5,11 +5,11 @@ instance cylinder models/cylinder.obj
 instance cone models/cone.obj
 
 # Texture images - Using the actual available textures from your system
-image earth textures/earthmap.ppm
+image blackBrick textures/blackBrickmap.ppm
 image checkerboard textures/checkerboard.ppm
-image sample_640x426 textures/sample_640x426.ppm
-image tree_1 textures/tree_1.ppm
-image west_1 textures/west_1.ppm
+image paper textures/paper.ppm
+image brick textures/brick.ppm
+image grass textures/grass.ppm
 
 # Lights
 light main-light
@@ -138,7 +138,7 @@ scale building1-scale building1-scale 60 100 40
 add-child building1-scale building1
 leaf building1-body building1-body instanceof box
 assign-material building1-body building1-mat
-assign-texture building1-body tree_1
+assign-texture building1-body brick
 add-child building1-body building1-scale
 
 # Roof (shading)
@@ -148,7 +148,7 @@ scale building1-roof-scale building1-roof-scale 60 1 40
 add-child building1-roof-scale building1-roof-pos
 leaf building1-roof building1-roof instanceof box
 assign-material building1-roof building1-roof-mat
-assign-texture building1-roof tree_1
+assign-texture building1-roof brick
 add-child building1-roof building1-roof-scale
 
 # Front (shading)
@@ -158,7 +158,7 @@ scale building1-front-scale building1-front-scale 60 100 1
 add-child building1-front-scale building1-front-pos
 leaf building1-front building1-front instanceof box
 assign-material building1-front building1-front-mat
-assign-texture building1-front west_1
+assign-texture building1-front grass
 add-child building1-front building1-front-scale
 
 # Window
@@ -168,7 +168,7 @@ scale building1-window-scale building1-window-scale 20 20 1
 add-child building1-window-scale building1-window-pos
 leaf building1-window building1-window instanceof box
 assign-material building1-window building1-window-mat
-assign-texture building1-window sample_640x426
+assign-texture building1-window paper
 add-child building1-window building1-window-scale
 
 # another front-facing window
@@ -196,7 +196,7 @@ scale building1-sidewindow1-scale building1-sidewindow1-scale 1 20 30
 add-child building1-sidewindow1-scale building1-sidewindow1-pos
 leaf building1-sidewindow1 building1-sidewindow1 instanceof box
 assign-material building1-sidewindow1 building1-window-mat
-assign-texture building1-sidewindow1 sample_640x426
+assign-texture building1-sidewindow1 paper
 add-child building1-sidewindow1 building1-sidewindow1-scale
 
 # another side-facing window
@@ -212,7 +212,7 @@ scale turret-scale turret-scale 15 40 15
 add-child turret-scale turret-pos
 leaf turret turret instanceof cylinder
 assign-material turret turret-mat
-assign-texture turret earth
+assign-texture turret blackBrick
 add-child turret turret-scale
 
 # Turret roof
@@ -222,7 +222,7 @@ scale turret-roof-scale turret-roof-scale 20 30 20
 add-child turret-roof-scale turret-roof-pos
 leaf turret-roof turret-roof instanceof cone
 assign-material turret-roof roof-mat
-assign-texture turret-roof tree_1
+assign-texture turret-roof brick
 add-child turret-roof turret-roof-scale
 
 # Building 2
@@ -237,7 +237,7 @@ scale building2-scale building2-scale 50 80 40
 add-child building2-scale building2
 leaf building2-body building2-body instanceof box
 assign-material building2-body building2-mat
-assign-texture building2-body earth
+assign-texture building2-body blackBrick
 add-child building2-body building2-scale
 
 # Building 2 roof
@@ -247,7 +247,7 @@ scale building2-roof-scale building2-roof-scale 55 20 45
 add-child building2-roof-scale building2-roof-pos
 leaf building2-roof building2-roof instanceof cone
 assign-material building2-roof roof-mat
-assign-texture building2-roof tree_1
+assign-texture building2-roof brick
 add-child building2-roof building2-roof-scale
 
 # Pedestal 1
@@ -267,7 +267,7 @@ scale pedestal2-scale pedestal2-scale 15 6 10
 add-child pedestal2-scale pedestal2-pos
 leaf pedestal2 pedestal2 instanceof box
 assign-material pedestal2 pedestal-mat
-assign-texture pedestal2 west_1
+assign-texture pedestal2 grass
 add-child pedestal2 pedestal2-scale
 
 # Humanoid 1 (looking, imported)
