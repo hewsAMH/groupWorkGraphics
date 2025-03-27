@@ -34,7 +34,7 @@ uniform vec4 vColor;
 uniform sampler2D image;
 uniform bool useTexture;
 
-out vec4 fColor;
+out vec4 fragColor;
 
 void main()
 {
@@ -111,16 +111,16 @@ void main()
     }
 
     // Set the output color
-    fColor = vec4(color, 1.0);
+    fragColor = vec4(color, 1.0);
     
     // If no lights, fallback to material color
     if (numLights == 0) {
-        fColor = vColor;
+        fragColor = vColor;
     }
     
     // Apply texture if enabled
     if (useTexture)
     {
-        fColor *= texture(image, fTexCoord.st);
+        fragColor *= texture(image, fTexCoord.st);
     }
 }

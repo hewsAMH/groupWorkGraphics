@@ -7,7 +7,7 @@
 #include "PolygonMesh.h"
 #include "SGNode.h"
 #include "VertexAttrib.h"
-#include "../Light.h"
+#include "Light.h"
 #include <vector>
 
 #include <map>
@@ -114,7 +114,7 @@ namespace sgraph
      * @param viewMatrix the view matrix
      * @return vector of lights in view space
      */
-    virtual vector<util::Light> getAllLightsInViewSpace(const glm::mat4 &viewMatrix) = 0;
+    //virtual vector<util::Light> getAllLightsInViewSpace(const glm::mat4 &viewMatrix) = 0;
   };
 }
 
