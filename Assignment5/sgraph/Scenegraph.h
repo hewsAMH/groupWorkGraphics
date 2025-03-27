@@ -5,6 +5,7 @@
 #include "SGNode.h"
 #include "glm/glm.hpp"
 #include "IVertexData.h"
+#include "../../include/TextureImage.h"
 #include "PolygonMesh.h"
 #include <string>
 #include <map>
@@ -25,7 +26,9 @@ namespace sgraph {
   protected:
     SGNode *root;
     map<string,util::PolygonMesh<VertexAttrib> > meshes;
+    map<string,util::TextureImage> images;
     map<string,string> meshPaths;
+    map<string,string> imagePaths;
 
 
     /**
@@ -88,16 +91,28 @@ namespace sgraph {
       this->meshes = meshes;
     }
 
+    void setImages(map<string,util::TextureImage>& images) { this->images = images; }
+
     map<string,util::PolygonMesh<VertexAttrib> > getMeshes() {
       return this->meshes;
     }
+
+    map<string,util::TextureImage> getImages() { return this->images; }
 
     void setMeshPaths(map<string,string>& meshPaths) {
       this->meshPaths = meshPaths;
     }
 
+    void setImagePaths(map<string,string>& imagePaths) {
+      this->imagePaths = imagePaths;
+    }
+
     map<string,string> getMeshPaths() {
       return this->meshPaths;
+    }
+
+    map<string,string> getImagePaths() {
+      return this->imagePaths;
     }
   };
 }

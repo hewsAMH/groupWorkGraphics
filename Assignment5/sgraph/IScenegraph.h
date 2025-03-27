@@ -4,7 +4,10 @@
 
 #include <glm/glm.hpp>
 #include "IVertexData.h"
+#include "../../include/TextureImage.h"
+#include "PolygonMesh.h"
 #include "SGNode.h"
+#include "VertexAttrib.h"
 
 
 #include <map>
@@ -70,11 +73,19 @@ namespace sgraph
         virtual void setMeshes(map<string,util::PolygonMesh<VertexAttrib> >& meshes)=0;
 
       /**
+       */
+        virtual void setImages(map<string, util::TextureImage>& images)=0;
+
+      /**
        * Set the mesh name ->mesh path for all meshes used by this scene graph
        * 
        * @param meshPaths 
        */
         virtual void setMeshPaths(map<string,string>& meshPaths)=0;
+
+      /**
+       */
+        virtual void setImagePaths(map<string,string>& imagePaths)=0;
 
       /**
        * Get the meshes used by this scene graph
@@ -83,6 +94,8 @@ namespace sgraph
        */
         virtual map<string,util::PolygonMesh<VertexAttrib> > getMeshes()=0;
 
+        virtual map<string,util::TextureImage> getImages()=0;
+
       /**
        * Get a map of each mesh name (as the leaves refer to it) and the path to the mesh file 
        * 
@@ -90,6 +103,8 @@ namespace sgraph
        * @return map<string,string> 
        */
         virtual map<string,string> getMeshPaths()=0;
+
+        virtual map<string,string> getImagePaths()=0;
     };
 }
 
