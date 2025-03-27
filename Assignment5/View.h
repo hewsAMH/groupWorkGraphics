@@ -14,6 +14,7 @@
 #include "VertexAttrib.h"
 #include "Callbacks.h"
 #include "sgraph/IScenegraph.h"
+#include "ourutils/Logger.h"
 
 #include <stack>
 using namespace std;
@@ -24,7 +25,9 @@ class View
 public:
     View();
     ~View();
-    void init(Callbacks* callbacks,map<string,util::PolygonMesh<VertexAttrib>>& meshes);
+    void initGlfw();
+    void initCallbacks(Callbacks* callbacks);
+    void init(Callbacks* callbacks,map<string,util::PolygonMesh<VertexAttrib>>& meshes,map<string,util::TextureImage>& images);
     void display(sgraph::IScenegraph *scenegraph);
     bool shouldWindowClose();
     void closeWindow();
@@ -32,6 +35,8 @@ public:
     void adjustRotation(char axis, float delta);
     void getCursorPosn(double *xpos, double *ypos);
     void getWindowScalars(float *scaleX, float *scaleY);
+
+    void setLogger(ourutils::Logger& logger);
 
 private: 
 
@@ -47,6 +52,8 @@ private:
     float thetaX;
     float thetaY;
     int upVal = 1;
+
+    ourutils::Logger logger;
 };
 
 #endif

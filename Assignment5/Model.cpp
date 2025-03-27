@@ -12,10 +12,6 @@ Model::~Model() {
     }
 }
 
-
-
-
-
 sgraph::IScenegraph *Model::getScenegraph() {
     return this->scenegraph;
 }
@@ -24,5 +20,6 @@ void Model::setScenegraph(sgraph::IScenegraph *scenegraph) {
     this->scenegraph = scenegraph;
 }
 
-
-
+void Model::setLogger(ourutils::Logger& logger) {
+    this->logger = logger;
+}

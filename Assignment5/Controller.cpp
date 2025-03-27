@@ -1,55 +1,65 @@
 #include "Controller.h"
-#include "sgraph/IScenegraph.h"
-#include "sgraph/Scenegraph.h"
+#include "ObjImporter.h"
+#include "TextureImage.h"
 #include "sgraph/GroupNode.h"
+#include "sgraph/IScenegraph.h"
 #include "sgraph/LeafNode.h"
 #include "sgraph/ScaleTransform.h"
-#include "ObjImporter.h"
+#include "sgraph/Scenegraph.h"
 using namespace sgraph;
 #include <iostream>
 using namespace std;
 
-#include "sgraph/TextScenegraphRenderer.h"
 #include "sgraph/ScenegraphExporter.h"
 #include "sgraph/ScenegraphImporter.h"
+#include "sgraph/TextScenegraphRenderer.h"
 
-Controller::Controller(Model& m,View& v) {
-    model = m;
-    view = v;
+Controller::Controller(Model& m, View& v, vector<string> &argv) : model(m), view(v) {
+    this->initLogger(m, v, argv);
+    this->initScenegraph(argv);
+}
 
-    initScenegraph();
+void Controller::initLogger(Model& m, View& v, vector<string> &argv) {
+    ourutils::Logger logger;
+    /** optional arg [ -d ] enables debug printing */
+    if (std::find(argv.begin(), argv.end(), "-d") != argv.end())
+        logger.setDebug();
+    this->logger = logger;
+    this->model.setLogger(logger);
+    this->view.setLogger(logger);
 }
 
 //edited to use the new text renderer (TextScenegraphRenderer.h)
-void Controller::initScenegraph() {
+void Controller::initScenegraph(vector<string> &argv) {
+    std::string commandFilePath = "scenegraphmodels/courtyard-scene-commands.txt";
+    /** optional arg [ -f <filepath> ] overwrites the hardcoded default */
+    auto it = std::find(argv.begin(), argv.end(), "-f");
+    if (it != argv.end() && it + 1 != argv.end())
+        commandFilePath = *(it + 1);
     //read in the file of commands
-    ifstream inFile("scenegraphmodels/courtyard-scene-commands.txt");
-    //ifstream inFile("tryout.txt");
+    ifstream inFile(commandFilePath);
     sgraph::ScenegraphImporter importer;
 
+    /** importer, parsing logic, & leafnode all changed to accommodate light */
     IScenegraph *scenegraph = importer.parse(inFile);
-    //scenegraph->setMeshes(meshes);
     model.setScenegraph(scenegraph);
-    cout << "Scenegraph made" << endl;   
+    this->logger.debugPrint({"Scenegraph made"});
 
     //create + use the text renderer
     sgraph::TextScenegraphRenderer renderer;
     scenegraph->getRoot()->accept(&renderer);
     string textRepresentation = renderer.getOutput();
-    cout << "\nScene Graph Structure:\n" << textRepresentation << endl;  
-
+    cout << "\nScene Graph Structure:\n" << textRepresentation << endl;
+    this->logger.debugPrint({"Finished printing the structure"});
 }
 
-Controller::~Controller()
-{
-    
-}
+Controller::~Controller() {}
 
-void Controller::run()
-{
-    sgraph::IScenegraph * scenegraph = model.getScenegraph();
-    map<string,util::PolygonMesh<VertexAttrib> > meshes = scenegraph->getMeshes();
-    view.init(this,meshes);
+void Controller::run() {
+    sgraph::IScenegraph* scenegraph = model.getScenegraph();
+    map<string,util::PolygonMesh<VertexAttrib>> meshes = scenegraph->getMeshes();
+    map<string,util::TextureImage> images = scenegraph->getImages();
+    view.init(this, meshes, images);
     while (!view.shouldWindowClose()) {
         view.display(scenegraph);
         promptAdjustRotation();
@@ -114,12 +124,8 @@ void Controller::reshape(int width, int height)
     }
 }
 
-void Controller::dispose()
-{
-    view.closeWindow();
-}
+void Controller::dispose() { view.closeWindow(); }
 
-void Controller::error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
+void Controller::error_callback(int error, const char* description) {
+    std::cerr << "Error: " << description << std::endl;
 }

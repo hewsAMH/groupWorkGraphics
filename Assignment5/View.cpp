@@ -1,4 +1,5 @@
 #include "View.h"
+#include "TextureImage.h"
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -10,107 +11,71 @@ using namespace std;
 #include "VertexAttrib.h"
 
 
-View::View() {
+View::View() {}
 
-}
+View::~View(){}
 
-View::~View(){
-
-}
-
-void View::init(Callbacks *callbacks,map<string,util::PolygonMesh<VertexAttrib>>& meshes) 
-{
+void View::initGlfw() {
     if (!glfwInit())
         exit(EXIT_FAILURE);
-
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-    window = glfwCreateWindow(800, 800, "Hello GLFW: Per-vertex coloring", NULL, NULL);
-    if (!window)
-    {
+    this->window = glfwCreateWindow(800, 800, "Hello GLFW: Per-vertex coloring", NULL, NULL);
+    if (!this->window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-     glfwSetWindowUserPointer(window, (void *)callbacks);
-
-    //using C++ functions as callbacks to a C-style library
-    glfwSetKeyCallback(window, 
-    [](GLFWwindow* window, int key, int scancode, int action, int mods)
-    {
-        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onkey(key,scancode,action,mods);
-    });
-
-    GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
-    glfwSetCursor(window, cursor);
-
-    this->thetaX = 0.0f;
-    this->thetaY = glm::radians(30.0f);
-
-    glfwSetMouseButtonCallback(window,
-    [](GLFWwindow* window, int button, int action, int mods)
-    {
-        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onmouse(button,action,mods);
-    });
-
-    glfwSetWindowSizeCallback(window, 
-    [](GLFWwindow* window, int width,int height)
-    {
-        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->reshape(width,height);
-    });
-
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(this->window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
+}
 
+void View::initCallbacks(Callbacks* callbacks) {
+    glfwSetWindowUserPointer(this->window, (void *)callbacks);
+    //using C++ functions as callbacks to a C-style library
+    glfwSetKeyCallback(this->window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onkey(key,scancode,action,mods);
+    });
+    GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+    glfwSetCursor(this->window, cursor);
+    glfwSetMouseButtonCallback(this->window, [](GLFWwindow* window, int button, int action, int mods) {
+        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->onmouse(button,action,mods);
+    });
+    glfwSetWindowSizeCallback(this->window, [](GLFWwindow* window, int width,int height) {
+        reinterpret_cast<Callbacks*>(glfwGetWindowUserPointer(window))->reshape(width,height);
+    });
+}
+
+void View::init(Callbacks *callbacks,map<string,util::PolygonMesh<VertexAttrib>>& meshes,map<string,util::TextureImage>& images) {
+    this->initGlfw();
+    this->initCallbacks(callbacks);
     // create the shader program
-    program.createProgram(string("shaders/default.vert"),
-                          string("shaders/default.frag"));
-    // assuming it got created, get all the shader variables that it uses
-    // so we can initialize them at some point
-    // enable the shader program
+    program.createProgram(string("shaders/phong-multiple.vert"),
+                          string("shaders/phong-multiple.frag"));
     program.enable();
     shaderLocations = program.getAllShaderVariables();
-
-    
-    /* In the mesh, we have some attributes for each vertex. In the shader
-     * we have variables for each vertex attribute. We have to provide a mapping
-     * between attribute name in the mesh and corresponding shader variable
-     name.
-     *
-     * This will allow us to use PolygonMesh with any shader program, without
-     * assuming that the attribute names in the mesh and the names of
-     * shader variables will be the same.
-
-       We create such a shader variable -> vertex attribute mapping now
-     */
     map<string, string> shaderVarsToVertexAttribs;
-
     shaderVarsToVertexAttribs["vPosition"] = "position";
-    
-    
-    for (typename map<string,util::PolygonMesh<VertexAttrib> >::iterator it=meshes.begin();
+    for (typename map<string,util::PolygonMesh<VertexAttrib>>::iterator it=meshes.begin();
            it!=meshes.end();
            it++) {
         util::ObjectInstance * obj = new util::ObjectInstance(it->first);
         obj->initPolygonMesh(shaderLocations,shaderVarsToVertexAttribs,it->second);
+        obj->
         objects[it->first] = obj;
     }
-    
 	int window_width,window_height;
     glfwGetFramebufferSize(window,&window_width,&window_height);
-
     //prepare the projection matrix for perspective projection
 	projection = glm::perspective(glm::radians(60.0f),(float)window_width/window_height,0.1f,10000.0f);
     glViewport(0, 0, window_width,window_height);
-
     frames = 0;
     time = glfwGetTime();
-
     renderer = new sgraph::GLScenegraphRenderer(modelview,objects,shaderLocations);
-    
+    this->thetaX = 0.0f;
+    this->thetaY = glm::radians(30.0f);
 }
 
 // getter due to keeping window private
@@ -225,7 +190,6 @@ void View::closeWindow() {
     glfwTerminate();
 }
 
-
-
-
-
+void View::setLogger(ourutils::Logger& logger) {
+    this->logger = logger;
+}

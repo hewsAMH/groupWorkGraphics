@@ -1,17 +1,14 @@
-//! [code]
-
-#include <glad/glad.h>
 #include "View.h"
-#include "Model.h"
 #include "Controller.h"
+#include "Model.h"
+#include <glad/glad.h>
 
-int main(int argc,char *argv[]) {
+
+int main(int argc, char* argv[]) {
     Model model;
     View view;
-    Controller controller(model,view);
+    // added for debug flag, specifying scenegraph command file name/path, etc.
+    std::vector<std::string> args(argv + 1, argv + argc);
+    Controller controller(model, view, args);
     controller.run();
-
-
 }
-
-//! [code]
